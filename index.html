@@ -1,877 +1,356 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SocialConnect - Professional Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+ <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login/Sign up- SocialConnect</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Firebase SDK (LOAD ONLY ONCE) -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+    
     <style>
         :root {
-            --primary: #3B82F6;
-            --secondary: #10B981;
-            --accent: #EF4444;
-            --dark: #1F2937;
-            --light: #F3F4F6;
-            --radius: 12px;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --primary: #4CAF50;
+            --secondary: #2E7D32;
+            --error: #FF5252;
         }
-
-        .dark {
-            --dark: #F3F4F6;
-            --light: #1F2937;
-        }
-
-        * {
-            transition: background-color 0.3s, color 0.3s, transform 0.2s;
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
+        
         body {
-            background-color: #f3f4f6;
-            color: #1f2937;
-        }
-
-        .dark body {
-            background-color: #111827;
-            color: #f3f4f6;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1rem;
-        }
-
-        /* Header */
-        header {
-            background-color: white;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 50;
-        }
-
-        .dark header {
-            background-color: #1f2937;
-        }
-
-        /* Utility Classes */
-        .flex {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
             display: flex;
-        }
-
-        .items-center {
-            align-items: center;
-        }
-
-        .justify-between {
-            justify-content: space-between;
-        }
-
-        .space-x-4 > * + * {
-            margin-left: 1rem;
-        }
-
-        .space-y-6 > * + * {
-            margin-top: 1.5rem;
-        }
-
-        .bg-white {
-            background-color: white;
-        }
-
-        .dark .bg-white {
-            background-color: #1f2937;
-        }
-
-        .rounded-xl {
-            border-radius: 12px;
-        }
-
-        .shadow-md {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
-
-        .p-6 {
-            padding: 1.5rem;
-        }
-
-        .mb-6 {
-            margin-bottom: 1.5rem;
-        }
-
-        .text-xl {
-            font-size: 1.25rem;
-        }
-
-        .font-bold {
-            font-weight: 700;
-        }
-
-        .text-gray-600 {
-            color: #4b5563;
-        }
-
-        .dark .text-gray-600 {
-            color: #9ca3af;
-        }
-
-        /* Grid System */
-        .grid {
-            display: grid;
-        }
-
-        .grid-cols-1 {
-            grid-template-columns: repeat(1, minmax(0, 1fr));
-        }
-
-        .grid-cols-4 {
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-        }
-
-        .gap-4 {
-            gap: 1rem;
-        }
-
-        .lg\:grid-cols-3 {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-        }
-
-        .lg\:col-span-2 {
-            grid-column: span 2 / span 2;
-        }
-
-        /* Stats Cards */
-        .bg-blue-50 {
-            background-color: #eff6ff;
-        }
-
-        .dark .bg-blue-50 {
-            background-color: #1e3a8a;
-        }
-
-        .border-blue-100 {
-            border-color: #dbeafe;
-        }
-
-        .dark .border-blue-100 {
-            border-color: #1e3a8a;
-        }
-
-        .text-blue-500 {
-            color: #3b82f6;
-        }
-
-        .dark .text-blue-500 {
-            color: #93c5fd;
-        }
-
-        .text-2xl {
-            font-size: 1.5rem;
-        }
-
-        /* Network Visualization */
-        .network-visualization {
-            height: 300px;
-            background: linear-gradient(135deg, #f0f9ff 0%, #e6f7ff 100%);
-            border-radius: var(--radius);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .dark .network-visualization {
-            background: linear-gradient(135deg, #1e3a8a 0%, #0c4a6e 100%);
-        }
-
-        .node {
-            position: absolute;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
             justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
         }
-
-        .node:hover {
-            transform: scale(1.2);
-            z-index: 10;
-        }
-
-        .node-main {
-            width: 70px;
-            height: 70px;
-            background: var(--primary);
-            color: white;
-            font-weight: bold;
-            z-index: 5;
-        }
-
-        .node-connection {
-            width: 50px;
-            height: 50px;
-            background: var(--secondary);
-            color: white;
-        }
-
-        .line {
-            position: absolute;
-            height: 2px;
-            background: #93c5fd;
-            transform-origin: 0 0;
-        }
-
-        .dark .line {
-            background: #3b82f6;
-        }
-
-        /* Profile Completion */
-        .profile-completion {
-            height: 8px;
-            border-radius: 4px;
-            background: #e5e7eb;
-            overflow: hidden;
-        }
-
-        .dark .profile-completion {
-            background: #374151;
-        }
-
-        .completion-bar {
-            height: 100%;
-            background: var(--primary);
-        }
-
-        /* Post Cards */
-        .post-card {
+        
+        .login-container {
             background: white;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 1.5rem;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
         }
-
-        .dark .post-card {
-            background: #1f2937;
+        
+        .logo {
+            text-align: center;
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-bottom: 20px;
         }
-
-        .post-header {
-            padding: 1rem;
-            border-bottom: 1px solid #e5e7eb;
+        
+        .form-group {
+            margin-bottom: 15px;
         }
-
-        .dark .post-header {
-            border-color: #374151;
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
         }
-
-        .post-content {
-            padding: 1rem;
+        
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
         }
-
-        .post-actions {
-            padding: 0.5rem 1rem;
-            border-top: 1px solid #e5e7eb;
-        }
-
-        .dark .post-actions {
-            border-color: #374151;
-        }
-
-        /* Floating Action Button */
-        .fab {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            z-index: 50;
+        
+        .submit-btn {
+            width: 100%;
+            padding: 10px;
             background-color: var(--primary);
             color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            border: none;
+            border-radius: 4px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            font-size: 1rem;
         }
-
-        .fab:hover {
-            transform: scale(1.1);
-            background-color: #2563eb;
+        
+        .submit-btn:hover {
+            background-color: var(--secondary);
         }
-
-        /* Responsive Design */
-        @media (max-width: 1024px) {
-            .lg\:grid-cols-3 {
-                grid-template-columns: repeat(1, minmax(0, 1fr));
-            }
-            
-            .lg\:col-span-2 {
-                grid-column: span 1;
-            }
+        
+        .error-message {
+            color: var(--error);
+            margin-top: 10px;
+            text-align: center;
         }
-
-        @media (max-width: 768px) {
-            .grid-cols-4 {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
+        
+        .switch-mode {
+            text-align: center;
+            margin-top: 15px;
         }
-
-        @media (max-width: 480px) {
-            .grid-cols-4 {
-                grid-template-columns: repeat(1, minmax(0, 1fr));
-            }
+        
+        .switch-mode a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        .guest-option {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .hidden {
+            display: none;
         }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-    <!-- Header -->
-    <header class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
-            <a href="#" class="flex items-center space-x-2" id="logo-link">
-                <i class="fas fa-link text-blue-500 text-2xl"></i>
-                <span class="text-xl font-bold hidden md:inline">SocialConnect</span>
-            </a>
-            
-            <nav class="hidden md:flex items-center space-x-8">
-                <a href="#" class="nav-item active group" id="dashboard-link" title="Dashboard">
-                    <div class="flex flex-col items-center">
-                        <i class="fas fa-home text-xl"></i>
-                        <span class="text-xs mt-1">Home</span>
-                    </div>
-                </a>
-                <a href="#" class="nav-item group" id="connections-link" title="Connections">
-                    <div class="flex flex-col items-center">
-                        <i class="fas fa-user-friends text-xl"></i>
-                        <span class="text-xs mt-1">Network</span>
-                    </div>
-                </a>
-                <a href="#" class="nav-item group" id="messages-link" title="Messages">
-                    <div class="flex flex-col items-center">
-                        <i class="fas fa-envelope text-xl"></i>
-                        <span class="text-xs mt-1">Messages</span>
-                    </div>
-                </a>
-                <a href="#" class="nav-item group" id="notifications-link" title="Notifications">
-                    <div class="flex flex-col items-center relative">
-                        <i class="fas fa-bell text-xl"></i>
-                        <span class="text-xs mt-1">Alerts</span>
-                        <span id="notification-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
-                    </div>
-                </a>
-            </nav>
-            
-            <div class="hidden md:flex items-center space-x-4">
-                <div class="relative inline-block w-12 mr-2 align-middle select-none">
-                    <input type="checkbox" id="dark-mode-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
-                    <label for="dark-mode-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
-                </div>
-                
-                <button id="ai-assistant-btn" class="p-2 rounded-full bg-blue-100 dark:bg-gray-700 hover:bg-blue-200 dark:hover:bg-gray-600">
-                    <i class="fas fa-robot text-blue-500"></i>
-                </button>
-                
-                <div class="flex items-center space-x-2 cursor-pointer" id="user-profile">
-                    <img id="header-profile-img" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=80&h=80&q=80" alt="Profile" class="w-8 h-8 rounded-full object-cover">
-                    <span class="font-medium hidden lg:inline" id="header-username">Alex Morgan</span>
-                    <i class="fas fa-chevron-down text-gray-400"></i>
-                </div>
-            </div>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <i class="fas fa-hands-helping"></i> SocialConnect login/Sign up 
         </div>
-    </header>
-
-    <!-- Main Dashboard Content -->
-    <main class="container mx-auto px-4 py-6">
-        <!-- Dashboard Header -->
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-            <div>
-                <h1 class="text-2xl font-bold">Your Professional Dashboard</h1>
-                <p class="text-gray-600 dark:text-gray-400">Welcome back, Alex. Here's what's happening in your network.</p>
+        
+        <div id="loginForm">
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" class="form-control" id="loginEmail" placeholder="your@email.com">
             </div>
-            <div class="mt-4 md:mt-0">
-                <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
-                    <i class="fas fa-plus"></i>
-                    <span>Share Update</span>
-                </button>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" class="form-control" id="loginPassword" placeholder="••••••••">
             </div>
-        </div>
-
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-blue-50 dark:bg-gray-800 p-4 rounded-lg border border-blue-100 dark:border-gray-700">
-                <div class="flex items-center">
-                    <div class="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg mr-3">
-                        <i class="fas fa-briefcase text-blue-500 dark:text-blue-300 text-xl"></i>
-                    </div>
-                    <div>
-                        <div class="text-blue-500 dark:text-blue-400 text-2xl font-bold">5</div>
-                        <div class="text-gray-600 dark:text-gray-400">Job Applications</div>
-                    </div>
-                </div>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">You have 2 pending applications and 3 interviews scheduled.</p>
-            </div>
+            <button class="submit-btn" id="loginBtn">Login</button>
+            <div class="error-message" id="loginError"></div>
             
-            <div class="bg-green-50 dark:bg-gray-800 p-4 rounded-lg border border-green-100 dark:border-gray-700">
-                <div class="flex items-center">
-                    <div class="p-2 bg-green-100 dark:bg-green-900 rounded-lg mr-3">
-                        <i class="fas fa-chart-line text-green-500 dark:text-green-300 text-xl"></i>
-                    </div>
-                    <div>
-                        <div class="text-green-500 dark:text-green-400 text-2xl font-bold">86%</div>
-                        <div class="text-gray-600 dark:text-gray-400">Profile Strength</div>
-                    </div>
-                </div>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Complete your profile to increase visibility by 40%.</p>
-            </div>
-            
-            <div class="bg-purple-50 dark:bg-gray-800 p-4 rounded-lg border border-purple-100 dark:border-gray-700">
-                <div class="flex items-center">
-                    <div class="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg mr-3">
-                        <i class="fas fa-eye text-purple-500 dark:text-purple-300 text-xl"></i>
-                    </div>
-                    <div>
-                        <div class="text-purple-500 dark:text-purple-400 text-2xl font-bold">142</div>
-                        <div class="text-gray-600 dark:text-gray-400">Profile Views</div>
-                    </div>
-                </div>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Your profile was viewed 23 times this week.</p>
-            </div>
-            
-            <div class="bg-yellow-50 dark:bg-gray-800 p-4 rounded-lg border border-yellow-100 dark:border-gray-700">
-                <div class="flex items-center">
-                    <div class="p-2 bg-yellow-100 dark:bg-yellow-900 rounded-lg mr-3">
-                        <i class="fas fa-user-friends text-yellow-500 dark:text-yellow-300 text-xl"></i>
-                    </div>
-                    <div>
-                        <div class="text-yellow-500 dark:text-yellow-400 text-2xl font-bold">247</div>
-                        <div class="text-gray-600 dark:text-gray-400">Connections</div>
-                    </div>
-                </div>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">12 new connections this month.</p>
+            <div class="switch-mode">
+                Don't have an account? <a href="#" id="switchToSignup">Sign up</a>
             </div>
         </div>
         
-        <!-- Main Content Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Left Column -->
-            <div class="lg:col-span-2 space-y-6">
-                <!-- Network Visualization -->
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-semibold">Your Network Visualization</h2>
-                        <button class="text-blue-500 hover:text-blue-700 text-sm">
-                            <i class="fas fa-expand mr-1"></i> Expand
-                        </button>
-                    </div>
-                    <div class="network-visualization relative">
-                        <div class="node node-main" style="top: 50%; left: 50%; transform: translate(-50%, -50%);">
-                            <i class="fas fa-user text-xl"></i>
-                        </div>
-                        <div class="node node-connection" style="top: 30%; left: 30%;">
-                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=80&h=80&q=80" class="w-full h-full rounded-full object-cover">
-                        </div>
-                        <div class="node node-connection" style="top: 30%; left: 70%;">
-                            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=80&h=80&q=80" class="w-full h-full rounded-full object-cover">
-                        </div>
-                        <div class="node node-connection" style="top: 70%; left: 30%;">
-                            <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=80&h=80&q=80" class="w-full h-full rounded-full object-cover">
-                        </div>
-                        <div class="node node-connection" style="top: 70%; left: 70%;">
-                            <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=80&h=80&q=80" class="w-full h-full rounded-full object-cover">
-                        </div>
-                    </div>
-                    <div class="mt-4 text-center">
-                        <p class="text-gray-600 dark:text-gray-400">Visualize your professional relationships and connection strength</p>
-                    </div>
-                </div>
-                
-                <!-- Recent Activity -->
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-semibold">Recent Activity</h2>
-                        <button class="text-blue-500 hover:text-blue-700 text-sm">View All</button>
-                    </div>
-                    <div class="space-y-4">
-                        <div class="flex items-start">
-                            <div class="bg-blue-100 dark:bg-blue-900 p-2 rounded-full mr-3">
-                                <i class="fas fa-user-plus text-blue-500 dark:text-blue-300"></i>
-                            </div>
-                            <div class="flex-1">
-                                <p class="font-medium">You connected with <span class="text-blue-500">Alex Morgan</span></p>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">Yesterday at 2:45 PM</p>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-start">
-                            <div class="bg-green-100 dark:bg-green-900 p-2 rounded-full mr-3">
-                                <i class="fas fa-comment text-green-500 dark:text-green-300"></i>
-                            </div>
-                            <div class="flex-1">
-                                <p><span class="font-medium">Sarah Johnson</span> commented on your post</p>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">2 days ago</p>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-start">
-                            <div class="bg-purple-100 dark:bg-purple-900 p-2 rounded-full mr-3">
-                                <i class="fas fa-briefcase text-purple-500 dark:text-purple-300"></i>
-                            </div>
-                            <div class="flex-1">
-                                <p>You applied for <span class="font-medium">Senior Product Designer</span> at TechVision</p>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">3 days ago</p>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-start">
-                            <div class="bg-yellow-100 dark:bg-yellow-900 p-2 rounded-full mr-3">
-                                <i class="fas fa-share-alt text-yellow-500 dark:text-yellow-300"></i>
-                            </div>
-                            <div class="flex-1">
-                                <p>Your post was shared by <span class="font-medium">Michael Chen</span></p>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">4 days ago</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Latest Posts -->
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-                    <h2 class="text-xl font-semibold mb-4">Latest Posts</h2>
-                    
-                    <!-- Post Card 1 -->
-                    <div class="post-card">
-                        <div class="post-header flex items-center">
-                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=80&h=80&q=80" class="w-10 h-10 rounded-full mr-3">
-                            <div>
-                                <h3 class="font-medium">John Anderson</h3>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">Product Lead at InnovateTech • 3 hours ago</p>
-                            </div>
-                        </div>
-                        <div class="post-content">
-                            <p>Just wrapped up an amazing product launch event! So proud of our team for pushing boundaries and creating something truly innovative. The future of tech is bright!</p>
-                            <div class="mt-4 flex space-x-2">
-                                <span class="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full">#ProductLaunch</span>
-                                <span class="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full">#Innovation</span>
-                                <span class="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full">#Tech</span>
-                            </div>
-                        </div>
-                        <div class="post-actions flex justify-between">
-                            <button class="flex items-center text-gray-500 dark:text-gray-400 hover:text-blue-500">
-                                <i class="far fa-thumbs-up mr-1"></i> 42
-                            </button>
-                            <button class="flex items-center text-gray-500 dark:text-gray-400 hover:text-blue-500">
-                                <i class="far fa-comment mr-1"></i> 8
-                            </button>
-                            <button class="flex items-center text-gray-500 dark:text-gray-400 hover:text-blue-500">
-                                <i class="far fa-share-square mr-1"></i> Share
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Post Card 2 -->
-                    <div class="post-card">
-                        <div class="post-header flex items-center">
-                            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=80&h=80&q=80" class="w-10 h-10 rounded-full mr-3">
-                            <div>
-                                <h3 class="font-medium">Sarah Johnson</h3>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">Senior UX Designer • 1 day ago</p>
-                            </div>
-                        </div>
-                        <div class="post-content">
-                            <p>Fascinating article on the future of AI in design workflows. It's amazing how quickly these tools are evolving and becoming integral to our creative processes.</p>
-                            <div class="mt-4">
-                                <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
-                                    <div class="flex">
-                                        <div class="bg-gray-200 dark:bg-gray-600 w-16 h-16 rounded-lg"></div>
-                                        <div class="ml-4">
-                                            <p class="font-medium">AI in Design: The Future is Now</p>
-                                            <p class="text-sm text-gray-600 dark:text-gray-400">designinsights.com</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="post-actions flex justify-between">
-                            <button class="flex items-center text-gray-500 dark:text-gray-400 hover:text-blue-500">
-                                <i class="far fa-thumbs-up mr-1"></i> 87
-                            </button>
-                            <button class="flex items-center text-gray-500 dark:text-gray-400 hover:text-blue-500">
-                                <i class="far fa-comment mr-1"></i> 24
-                            </button>
-                            <button class="flex items-center text-gray-500 dark:text-gray-400 hover:text-blue-500">
-                                <i class="far fa-share-square mr-1"></i> Share
-                            </button>
-                        </div>
-                    </div>
-                </div>
+        <div id="signupForm" class="hidden">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" class="form-control" id="signupName" placeholder="Your name">
             </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" class="form-control" id="signupEmail" placeholder="your@email.com">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" class="form-control" id="signupPassword" placeholder="••••••••">
+            </div>
+            <div class="form-group">
+                <label>Confirm Password</label>
+                <input type="password" class="form-control" id="signupConfirmPassword" placeholder="••••••••">
+            </div>
+            <button class="submit-btn" id="signupBtn">Sign Up</button>
+            <div class="error-message" id="signupError"></div>
             
-            <!-- Right Column -->
-            <div class="space-y-6">
-                <!-- Profile Completion -->
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-                    <h2 class="text-xl font-semibold mb-4">Profile Strength</h2>
-                    <div class="flex items-center mb-3">
-                        <div class="text-2xl font-bold text-blue-500">86%</div>
-                        <div class="ml-auto text-sm text-gray-500 dark:text-gray-400">Complete your profile</div>
-                    </div>
-                    <div class="profile-completion mb-2">
-                        <div class="completion-bar" style="width: 86%;"></div>
-                    </div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">A complete profile is 3x more likely to be viewed by recruiters.</p>
-                    <ul class="space-y-3">
-                        <li class="flex items-center">
-                            <i class="fas fa-check-circle text-green-500 mr-2"></i>
-                            <span>Profile photo</span>
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-check-circle text-green-500 mr-2"></i>
-                            <span>Headline</span>
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-check-circle text-green-500 mr-2"></i>
-                            <span>Experience</span>
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-exclamation-circle text-yellow-500 mr-2"></i>
-                            <span>Skills (add 3 more)</span>
-                        </li>
-                        <li class="flex items-center">
-                            <i class="far fa-circle text-gray-400 mr-2"></i>
-                            <span>Education</span>
-                        </li>
-                    </ul>
-                    <button class="mt-4 w-full bg-blue-50 dark:bg-gray-700 hover:bg-blue-100 dark:hover:bg-gray-600 text-blue-600 dark:text-blue-300 py-2 px-3 rounded-lg text-sm font-medium">
-                        Complete Your Profile
-                    </button>
-                </div>
-                
-                <!-- AI Recommendations -->
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-                    <div class="flex items-center mb-4">
-                        <i class="fas fa-robot text-indigo-500 mr-2"></i>
-                        <h2 class="text-xl font-semibold">AI Network Recommendations</h2>
-                    </div>
-                    <p class="text-gray-600 dark:text-gray-400 mb-4">Based on your activity, we recommend connecting with these professionals:</p>
-                    
-                    <div class="space-y-4">
-                        <div class="flex items-center">
-                            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=60&h=60&q=80" class="w-12 h-12 rounded-full object-cover mr-3">
-                            <div class="flex-1">
-                                <h3 class="font-medium">Sarah Johnson</h3>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Senior UX Designer @ DesignHub</p>
-                                <div class="flex flex-wrap gap-1 mt-1">
-                                    <span class="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">UX Design</span>
-                                    <span class="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">UI Design</span>
-                                </div>
-                            </div>
-                            <button class="p-2 rounded-full bg-blue-50 dark:bg-gray-700 hover:bg-blue-100 dark:hover:bg-gray-600">
-                                <i class="fas fa-user-plus text-blue-500"></i>
-                            </button>
-                        </div>
-                        
-                        <div class="flex items-center">
-                            <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=60&h=60&q=80" class="w-12 h-12 rounded-full object-cover mr-3">
-                            <div class="flex-1">
-                                <h3 class="font-medium">David Wilson</h3>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Marketing Director @ BrandUp</p>
-                                <div class="flex flex-wrap gap-1 mt-1">
-                                    <span class="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">Marketing</span>
-                                    <span class="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">Growth</span>
-                                </div>
-                            </div>
-                            <button class="p-2 rounded-full bg-blue-50 dark:bg-gray-700 hover:bg-blue-100 dark:hover:bg-gray-600">
-                                <i class="fas fa-user-plus text-blue-500"></i>
-                            </button>
-                        </div>
-                        
-                        <div class="flex items-center">
-                            <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=60&h=60&q=80" class="w-12 h-12 rounded-full object-cover mr-3">
-                            <div class="flex-1">
-                                <h3 class="font-medium">Michael Chen</h3>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Senior Developer @ DevSolutions</p>
-                                <div class="flex flex-wrap gap-1 mt-1">
-                                    <span class="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">JavaScript</span>
-                                    <span class="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">React</span>
-                                </div>
-                            </div>
-                            <button class="p-2 rounded-full bg-blue-50 dark:bg-gray-700 hover:bg-blue-100 dark:hover:bg-gray-600">
-                                <i class="fas fa-user-plus text-blue-500"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <button class="mt-4 w-full text-blue-500 hover:text-blue-700 text-sm font-medium">
-                        View All Recommendations
-                    </button>
-                </div>
-                
-                <!-- Upcoming Events -->
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-semibold">Upcoming Events</h2>
-                        <button class="text-blue-500 hover:text-blue-700 text-sm">View Calendar</button>
-                    </div>
-                    
-                    <div class="space-y-4">
-                        <div class="flex items-start p-3 bg-blue-50 dark:bg-gray-700 rounded-lg">
-                            <div class="bg-blue-100 dark:bg-blue-900 p-2 rounded-lg mr-3">
-                                <i class="fas fa-video text-blue-500 dark:text-blue-300"></i>
-                            </div>
-                            <div class="flex-1">
-                                <h3 class="font-medium">Product Team Meeting</h3>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">With Sarah Johnson and team</p>
-                                <div class="flex items-center mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                    <i class="far fa-clock mr-1"></i>
-                                    <span>Today, 2:00 PM - 3:30 PM</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-start p-3 bg-purple-50 dark:bg-gray-700 rounded-lg">
-                            <div class="bg-purple-100 dark:bg-purple-900 p-2 rounded-lg mr-3">
-                                <i class="fas fa-users text-purple-500 dark:text-purple-300"></i>
-                            </div>
-                            <div class="flex-1">
-                                <h3 class="font-medium">Tech Networking Event</h3>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">San Francisco Tech Hub</p>
-                                <div class="flex items-center mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                    <i class="far fa-clock mr-1"></i>
-                                    <span>Tomorrow, 6:00 PM - 8:00 PM</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-start p-3 bg-green-50 dark:bg-gray-700 rounded-lg">
-                            <div class="bg-green-100 dark:bg-green-900 p-2 rounded-lg mr-3">
-                                <i class="fas fa-briefcase text-green-500 dark:text-green-300"></i>
-                            </div>
-                            <div class="flex-1">
-                                <h3 class="font-medium">Job Interview: TechVision</h3>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Senior Product Designer position</p>
-                                <div class="flex items-center mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                    <i class="far fa-clock mr-1"></i>
-                                    <span>Friday, 10:00 AM</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <button class="mt-4 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 py-2 px-3 rounded-lg text-sm font-medium">
-                        Create New Event
-                    </button>
-                </div>
+            <div class="switch-mode">
+                Already have an account? <a href="#" id="switchToLogin">Login</a>
             </div>
         </div>
-    </main>
-
-    <!-- Floating Action Button -->
-    <button id="fab-btn" class="fab bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center">
-        <i class="fas fa-plus text-xl"></i>
-    </button>
+        
+        <div class="guest-option">
+            <p>or continue as <a href="index.html">guest</a> (limited access)</p>
+        </div>
+    </div>
 
     <script>
-        // Initialize the application
-        document.addEventListener('DOMContentLoaded', function() {
-            // Dark mode toggle
-            const darkModeToggle = document.getElementById('dark-mode-toggle');
-            const darkModePreference = localStorage.getItem('darkMode') === 'true';
-            
-            if (darkModePreference) {
-                document.documentElement.classList.add('dark');
-                darkModeToggle.checked = true;
-            }
-            
-            darkModeToggle.addEventListener('change', function() {
-                document.documentElement.classList.toggle('dark');
-                localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
-            });
-            
-            // Navigation
-            const navItems = document.querySelectorAll('.nav-item');
-            navItems.forEach(item => {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    navItems.forEach(i => i.classList.remove('active'));
-                    this.classList.add('active');
-                });
-            });
-            
-            // AI Assistant Button
-            const aiBtn = document.getElementById('ai-assistant-btn');
-            aiBtn.addEventListener('click', function() {
-                alert('AI assistant is now activated. How can I help you with your professional networking?');
-            });
-            
-            // FAB Button
-            const fabBtn = document.getElementById('fab-btn');
-            fabBtn.addEventListener('click', function() {
-                alert('What would you like to create? Post, event, or connection request?');
-            });
-            
-            // Simulate network visualization
-            const networkVisualization = document.querySelector('.network-visualization');
-            if (networkVisualization) {
-                // Create connections lines
-                const mainNode = networkVisualization.querySelector('.node-main');
-                const connections = networkVisualization.querySelectorAll('.node-connection');
-                
-                connections.forEach(conn => {
-                    const mainRect = mainNode.getBoundingClientRect();
-                    const connRect = conn.getBoundingClientRect();
-                    
-                    const mainX = mainRect.left + mainRect.width/2;
-                    const mainY = mainRect.top + mainRect.height/2;
-                    const connX = connRect.left + connRect.width/2;
-                    const connY = connRect.top + connRect.height/2;
-                    
-                    const length = Math.sqrt(Math.pow(connX - mainX, 2) + Math.pow(connY - mainY, 2));
-                    const angle = Math.atan2(connY - mainY, connX - mainX) * 180 / Math.PI;
-                    
-                    const line = document.createElement('div');
-                    line.className = 'line';
-                    line.style.width = `${length}px`;
-                    line.style.top = `${mainY}px`;
-                    line.style.left = `${mainX}px`;
-                    line.style.transform = `rotate(${angle}deg)`;
-                    
-                    networkVisualization.appendChild(line);
-                });
-            }
-            
-            // Simulate profile strength progress
-            const completionBar = document.querySelector('.completion-bar');
-            if (completionBar) {
-                let width = 0;
-                const targetWidth = 86;
-                const interval = setInterval(() => {
-                    if (width >= targetWidth) {
-                        clearInterval(interval);
-                        return;
-                    }
-                    width++;
-                    completionBar.style.width = `${width}%`;
-                }, 20);
-            }
-            
-            // Add interaction to post buttons
-            const likeButtons = document.querySelectorAll('.post-actions button:first-child');
-            likeButtons.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const icon = this.querySelector('i');
-                    if (icon.classList.contains('far')) {
-                        icon.classList.replace('far', 'fas');
-                        this.classList.add('text-blue-500');
-                    } else {
-                        icon.classList.replace('fas', 'far');
-                        this.classList.remove('text-blue-500');
-                    }
-                });
-            });
+        // Check if Firebase is already initialized
+        if (!firebase.apps.length) {
+    // Firebase Configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyAAxl0xBc_nLkTRO3XwiedbBD7Vj417i5M",
+        authDomain: "smart-personal-helper.firebaseapp.com",
+        projectId: "smart-personal-helper",
+        storageBucket: "smart-personal-helper.appspot.com",
+        messagingSenderId: "63071338320",
+        appId: "1:63071338320:web:87851a90236a7df7ff3655",
+        measurementId: "G-MP9GQJYTQC"
+    }
+    
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+}
+
+        // Get Firebase services
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const FieldValue = firebase.firestore.FieldValue;
+
+        // DOM Elements
+        const loginForm = document.getElementById('loginForm');
+        const signupForm = document.getElementById('signupForm');
+        const loginBtn = document.getElementById('loginBtn');
+        const signupBtn = document.getElementById('signupBtn');
+        const switchToSignup = document.getElementById('switchToSignup');
+        const switchToLogin = document.getElementById('switchToLogin');
+        const loginError = document.getElementById('loginError');
+        const signupError = document.getElementById('signupError');
+
+        // Switch between Login and Signup forms
+        switchToSignup.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.classList.add('hidden');
+            signupForm.classList.remove('hidden');
         });
+
+        switchToLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            signupForm.classList.add('hidden');
+            loginForm.classList.remove('hidden');
+        });
+
+        // Login Function
+        loginBtn.addEventListener('click', async () => {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            
+            if (!email || !password) {
+                loginError.textContent = 'Please fill all fields';
+                return;
+            }
+            
+            try {
+                loginBtn.disabled = true;
+                loginBtn.textContent = 'Logging in...';
+                loginError.textContent = '';
+                
+                await auth.signInWithEmailAndPassword(email, password);
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error("Login error:", error);
+                loginError.textContent = getAuthErrorMessage(error);
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Login';
+            }
+        });
+
+        // Signup Function
+        signupBtn.addEventListener('click', async () => {
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value.trim();
+            const confirmPassword = document.getElementById('signupConfirmPassword').value.trim();
+            
+            if (!name || !email || !password || !confirmPassword) {
+                signupError.textContent = 'Please fill all fields';
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                signupError.textContent = 'Passwords do not match';
+                return;
+            }
+            
+            if (password.length < 6) {
+                signupError.textContent = 'Password must be at least 6 characters';
+                return;
+            }
+            
+            try {
+                signupBtn.disabled = true;
+                signupBtn.textContent = 'Creating account...';
+                signupError.textContent = '';
+                
+                // Create user in Firebase Auth
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                
+                // Create user document in Firestore
+                await db.collection('users').doc(userCredential.user.uid).set({
+                    name,
+                    email,
+                    verified: false,
+                    createdAt: FieldValue.serverTimestamp()
+                });
+                
+                // Update user profile with display name
+                await userCredential.user.updateProfile({
+                    displayName: name
+                });
+                
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error("Signup error:", error);
+                signupError.textContent = getAuthErrorMessage(error);
+            } finally {
+                signupBtn.disabled = false;
+                signupBtn.textContent = 'Sign Up';
+            }
+        });
+
+        // Helper function to get user-friendly auth error messages
+        function getAuthErrorMessage(error) {
+            switch (error.code) {
+                case 'auth/email-already-in-use':
+                    return 'Email already in use';
+                case 'auth/invalid-email':
+                    return 'Invalid email address';
+                case 'auth/weak-password':
+                    return 'Password is too weak';
+                case 'auth/user-not-found':
+                    return 'User not found';
+                case 'auth/wrong-password':
+                    return 'Incorrect password';
+                default:
+                    return 'An error occurred. Please try again.';
+            }
+        }
+        async function loadMatchingServices() {
+    matchingServicesList.innerHTML = '<p>ميلاپ خدمتون ڳولي رهيو آهي...</p>';
+    
+    try {
+        let query = db.collection('services')
+            .where('status', '==', 'active');
+        
+        // صارف پروفائيل ۾ ضرورتن جو محفوظ طريقي سان چيڪ
+        if (userProfile && userProfile.needs && userProfile.needs.length > 0) {
+            query = query.where('category', 'in', userProfile.needs);
+        }
+        
+        const snapshot = await query
+            .orderBy('createdAt', 'desc')
+            .limit(10)
+            .get();
+        
+        if (snapshot.empty) {
+            matchingServicesList.innerHTML = '<p>ڪوبه ميلاپ خدمتون ڪونه مليون.</p>';
+            return;
+        }
+        
+        matchingServicesList.innerHTML = '';
+        snapshot.forEach(doc => {
+            displayServiceCard(doc.data(), doc.id, matchingServicesList, false);
+        });
+    } catch (error) {
+        console.error("ميلاپ خدمتون لوڊ ڪرڻ ۾ خرابي:", error);
+        matchingServicesList.innerHTML = '<p>ميلاپ ڳولڻ ۾ خرابي. مهرباني ڪري ريفريش ڪريو.</p>';
+    }
+}
+// In your connection loading function
+async function loadConnections() {
+    try {
+        const connections = await loadSuggestedConnections(currentUser.uid);
+        // Render connections...
+    } catch (error) {
+        if (error.code === 'permission-denied') {
+            showError("You don't have permission to view connections. Please log in.");
+        } else {
+            showError("Failed to load connections. Please try again.");
+        }
+    }
+}
+
+function showError(message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.textContent = message;
+    document.getElementById('connections-container').appendChild(errorDiv);
+}
     </script>
 </body>
 </html>
