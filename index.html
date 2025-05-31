@@ -2161,6 +2161,285 @@
             if (e.target === addSkillModal) closeSkillModal();
             if (e.target === addNeedModal) closeNeedModal();
         });
+<script>
+    // ... existing code ...
+
+    // Current edit state variables
+    let currentEditSkillIndex = null;
+    let currentEditNeedIndex = null;
+
+    // Initialize application
+    function initApp() {
+        // ... existing event listeners ...
+
+        // Add these new listeners
+        document.addEventListener('click', closeDropdowns);
+        window.addEventListener('click', closeModalsOnOutsideClick);
+    }
+
+    // Close dropdowns when clicking elsewhere
+    function closeDropdowns(e) {
+        if (!e.target.closest('.user-profile') && profileDropdown.classList.contains('active')) {
+            profileDropdown.classList.remove('active');
+        }
+    }
+
+    // Close modals when clicking outside
+    function closeModalsOnOutsideClick(e) {
+        if (e.target === connectionModal) closeModal();
+        if (e.target === profileModal) closeProfileModal();
+        if (e.target === addSkillModal) closeSkillModal();
+        if (e.target === addNeedModal) closeNeedModal();
+    }
+
+    // Load user profile from Firestore
+    async function loadUserProfile() {
+        // ... existing code ...
+        
+        if (userDoc.exists) {
+            userProfile = userDoc.data();
+            // Ensure arrays exist
+            userSkills = userProfile.skills || [];
+            userNeeds = userProfile.needs || [];
+            
+            updateUserUI();
+            renderSkills();
+            renderNeeds();
+        }
+        // ... rest of function ...
+    }
+
+    // Update UI with user data
+    function updateUserUI() {
+        // ... existing code ...
+        
+        // FIX: Handle skills properly
+        currentUserSkills.textContent = userSkills.length > 0 ? 
+            'Offering: ' + userSkills.slice(0, 3).map(skill => skill.name).join(', ') : 
+            'Offering help';
+    }
+
+    // Save profile
+    async function saveProfile(e) {
+        e.preventDefault();
+        
+        // ... existing validation ...
+
+        try {
+            // Update userProfile object
+            userProfile.name = document.getElementById('profileName').value;
+            userProfile.bio = document.getElementById('profileBio').value;
+            userProfile.location = document.getElementById('profileLocation').value;
+            userProfile.status = document.getElementById('profileStatus').value;
+            userProfile.skills = userSkills;
+            userProfile.needs = userNeeds;
+            
+            await db.collection('users').doc(currentUser.uid).set(userProfile, { merge: true });
+            // ... rest of function ...
+        }
+    }
+
+    // Open skill modal for editing
+    function openSkillModal(index = null) {
+        if (!currentUser || currentUser.uid === 'guest') {
+            alert('Please sign in to manage skills');
+            return;
+        }
+        
+        const modalTitle = document.querySelector('#addSkillModal h3');
+        if (index !== null) {
+            // Edit mode
+            modalTitle.innerHTML = '<i class="fas fa-edit"></i> Edit Skill';
+            const skill = userSkills[index];
+            document.getElementById('skillName').value = skill.name;
+            document.getElementById('skillLevel').value = skill.level;
+            document.getElementById('skillDesc').value = skill.description || '';
+            currentEditSkillIndex = index;
+        } else {
+            // Add mode
+            modalTitle.innerHTML = '<i class="fas fa-plus-circle"></i> Add New Skill';
+            document.getElementById('skillForm').reset();
+            currentEditSkillIndex = null;
+        }
+        
+        addSkillModal.style.display = 'flex';
+    }
+
+    // Add or update skill
+    async function addNewSkill(e) {
+        e.preventDefault();
+        const skillName = document.getElementById('skillName').value;
+        
+        if (!skillName) {
+            showStatusMessage('skillStatusMessage', 'Please enter a skill name', 'error');
+            return;
+        }
+        
+        try {
+            const newSkill = {
+                name: skillName,
+                level: document.getElementById('skillLevel').value,
+                description: document.getElementById('skillDesc').value
+            };
+            
+            if (currentEditSkillIndex !== null) {
+                // Update existing skill
+                userSkills[currentEditSkillIndex] = newSkill;
+            } else {
+                // Add new skill
+                userSkills.push(newSkill);
+            }
+            
+            await db.collection('users').doc(currentUser.uid).update({
+                skills: userSkills
+            });
+            
+            renderSkills();
+            showStatusMessage('skillStatusMessage', 
+                currentEditSkillIndex !== null ? 'Skill updated successfully!' : 'Skill added successfully!', 
+                'success');
+            
+            // Close modal after 2 seconds
+            setTimeout(() => {
+                closeSkillModal();
+            }, 2000);
+        } catch (error) {
+            console.error('Error saving skill:', error);
+            showStatusMessage('skillStatusMessage', 'Failed to save skill. Please try again.', 'error');
+        }
+    }
+
+    // Edit skill
+    function editSkill(index) {
+        openSkillModal(index);
+    }
+
+    // Open need modal for editing
+    function openNeedModal(index = null) {
+        if (!currentUser || currentUser.uid === 'guest') {
+            alert('Please sign in to manage needs');
+            return;
+        }
+        
+        const modalTitle = document.querySelector('#addNeedModal h3');
+        if (index !== null) {
+            // Edit mode
+            modalTitle.innerHTML = '<i class="fas fa-edit"></i> Edit Need';
+            const need = userNeeds[index];
+            document.getElementById('needName').value = need.name;
+            document.getElementById('needFrequency').value = need.frequency;
+            document.getElementById('needDesc').value = need.description || '';
+            currentEditNeedIndex = index;
+        } else {
+            // Add mode
+            modalTitle.innerHTML = '<i class="fas fa-plus-circle"></i> Add New Need';
+            document.getElementById('needForm').reset();
+            currentEditNeedIndex = null;
+        }
+        
+        addNeedModal.style.display = 'flex';
+    }
+
+    // Add or update need
+    async function addNewNeed(e) {
+        e.preventDefault();
+        const needName = document.getElementById('needName').value;
+        
+        if (!needName) {
+            showStatusMessage('needStatusMessage', 'Please enter a need', 'error');
+            return;
+        }
+        
+        try {
+            const newNeed = {
+                name: needName,
+                frequency: document.getElementById('needFrequency').value,
+                description: document.getElementById('needDesc').value
+            };
+            
+            if (currentEditNeedIndex !== null) {
+                // Update existing need
+                userNeeds[currentEditNeedIndex] = newNeed;
+            } else {
+                // Add new need
+                userNeeds.push(newNeed);
+            }
+            
+            await db.collection('users').doc(currentUser.uid).update({
+                needs: userNeeds
+            });
+            
+            renderNeeds();
+            showStatusMessage('needStatusMessage', 
+                currentEditNeedIndex !== null ? 'Need updated successfully!' : 'Need added successfully!', 
+                'success');
+            
+            // Close modal after 2 seconds
+            setTimeout(() => {
+                closeNeedModal();
+            }, 2000);
+        } catch (error) {
+            console.error('Error saving need:', error);
+            showStatusMessage('needStatusMessage', 'Failed to save need. Please try again.', 'error');
+        }
+    }
+
+    // Edit need
+    function editNeed(index) {
+        openNeedModal(index);
+    }
+
+    // Close skill modal
+    function closeSkillModal() {
+        addSkillModal.style.display = 'none';
+        document.getElementById('skillForm').reset();
+        document.getElementById('skillStatusMessage').style.display = 'none';
+        currentEditSkillIndex = null;
+    }
+
+    // Close need modal
+    function closeNeedModal() {
+        addNeedModal.style.display = 'none';
+        document.getElementById('needForm').reset();
+        document.getElementById('needStatusMessage').style.display = 'none';
+        currentEditNeedIndex = null;
+    }
+
+    // Logout
+    async function logout(e) {
+        if (e) e.preventDefault();
+        try {
+            await auth.signOut();
+            // Reset UI for guest
+            currentUser = {
+                uid: 'guest',
+                displayName: 'Guest User',
+                email: 'guest@example.com',
+                photoURL: 'https://randomuser.me/api/portraits/lego/1.jpg'
+            };
+            userProfile = {
+                skills: [],
+                needs: []
+            };
+            userSkills = [];
+            userNeeds = [];
+            posts = [];
+            
+            updateUserUI();
+            renderSkills();
+            renderNeeds();
+            postsContainer.innerHTML = '';
+            
+            profileDropdown.classList.remove('active');
+            showStatusMessage(postStatusMessage, 'You have been logged out', 'success');
+        } catch (error) {
+            console.error('Error signing out:', error);
+            showStatusMessage(postStatusMessage, 'Error logging out. Please try again.', 'error');
+        }
+    }
+
+    // ... rest of existing code ...
+</script>
     </script>
 </body>
 </html>
