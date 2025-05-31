@@ -2224,7 +2224,7 @@
         
         // ... existing validation ...
 
-        try {
+       
             // Update userProfile object
             userProfile.name = document.getElementById('profileName').value;
             userProfile.bio = document.getElementById('profileBio').value;
@@ -2232,12 +2232,12 @@
             userProfile.status = document.getElementById('profileStatus').value;
             userProfile.skills = userSkills;
             userProfile.needs = userNeeds;
-            
+        
             await db.collection('users').doc(currentUser.uid).set(userProfile, { merge: true });
             // ... rest of function ...
-        }
+        
     }
-
+       
     // Open skill modal for editing
     function openSkillModal(index = null) {
         if (!currentUser || currentUser.uid === 'guest') {
