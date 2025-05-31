@@ -3,31 +3,911 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SocialConnect - Real-Time Help Network</title>
+    <title>SocialConnect - Community Help Network</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
     <style>
-        /* تمام موجودہ CSS اسٹائلز یہاں رہیں گی */
-        /* میں نے انہیں چھوٹ دیا ہے کیونکہ وہ پہلے سے مکمل ہیں */
+        :root {
+            --primary: #4285F4;
+            --primary-dark: #3367D6;
+            --secondary: #34A853;
+            --accent: #EA4335;
+            --warning: #FBBC05;
+            --light: #F8F9FA;
+            --dark: #202124;
+            --gray: #5F6368;
+            --light-gray: #E8EAED;
+            --card-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        /* Header Styles */
+        header {
+            background-color: white;
+            box-shadow: var(--card-shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 0.8rem 1.5rem;
+        }
+        
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        .logo i {
+            margin-right: 0.5rem;
+        }
+        
+        .nav-links {
+            display: flex;
+            align-items: center;
+        }
+        
+        .nav-links a {
+            margin-left: 1.5rem;
+            color: var(--gray);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+        
+        .user-profile {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--light-gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        
+        .user-profile img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* Main Content Layout */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        
+        @media (min-width: 992px) {
+            .container {
+                grid-template-columns: 300px 1fr;
+            }
+        }
+        
+        /* Sidebar Styles */
+        .sidebar {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            padding: 1.5rem;
+            height: fit-content;
+        }
+        
+        .user-card {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--light-gray);
+            margin-right: 1rem;
+            overflow: hidden;
+        }
+        
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .user-info h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.3rem;
+        }
+        
+        .user-info p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .reputation {
+            display: flex;
+            align-items: center;
+            margin-top: 0.3rem;
+        }
+        
+        .reputation i {
+            color: var(--warning);
+            margin-right: 0.3rem;
+        }
+        
+        .mode-toggle {
+            margin-bottom: 1.5rem;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--light-gray);
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--secondary);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(30px);
+        }
+        
+        .toggle-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .active-label {
+            color: var(--primary);
+        }
+        
+        .filter-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .filter-section h4 {
+            margin-bottom: 0.8rem;
+            font-size: 1rem;
+        }
+        
+        .category-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .tag {
+            background-color: var(--light-gray);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .tag:hover {
+            background-color: #d3d3d3;
+        }
+        
+        .tag.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .location-filter {
+            margin-top: 1rem;
+        }
+        
+        .location-filter select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--light-gray);
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        
+        /* Main Content Styles */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .create-post {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            padding: 1.5rem;
+        }
+        
+        .create-post h2 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .post-form textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            resize: none;
+            margin-bottom: 1rem;
+            font-family: inherit;
+            min-height: 100px;
+        }
+        
+        .post-form textarea::placeholder {
+            color: var(--gray);
+        }
+        
+        .post-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .category-select {
+            flex-grow: 1;
+            margin-right: 1rem;
+        }
+        
+        .category-select select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--light-gray);
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        
+        .post-button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .post-button:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        /* Posts Feed */
+        .posts-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .post-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            padding: 1.5rem;
+            position: relative;
+        }
+        
+        .post-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .post-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--light-gray);
+            margin-right: 1rem;
+            overflow: hidden;
+        }
+        
+        .post-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .post-user {
+            flex-grow: 1;
+        }
+        
+        .post-user h4 {
+            font-size: 1rem;
+        }
+        
+        .post-user p {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+        
+        .post-distance {
+            font-size: 0.8rem;
+            color: var(--gray);
+            display: flex;
+            align-items: center;
+        }
+        
+        .post-distance i {
+            margin-right: 0.3rem;
+        }
+        
+        .post-content {
+            margin-bottom: 1rem;
+        }
+        
+        .post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .post-tag {
+            background-color: var(--light);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+        
+        .post-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--light-gray);
+            padding-top: 1rem;
+        }
+        
+        .action-button {
+            display: flex;
+            align-items: center;
+            background: none;
+            border: none;
+            color: var(--gray);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .action-button i {
+            margin-right: 0.5rem;
+        }
+        
+        .action-button:hover {
+            color: var(--primary);
+        }
+        
+        .help-button {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .help-button:hover {
+            background-color: #2d9241;
+        }
+        
+        /* Chat Button */
+        .chat-button {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 90;
+        }
+        
+        .chat-button i {
+            font-size: 1.5rem;
+        }
+        
+        .chat-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--accent);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        /* Mobile Menu */
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: white;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+            padding: 0.8rem 0;
+            z-index: 95;
+        }
+        
+        .mobile-menu-items {
+            display: flex;
+            justify-content: space-around;
+        }
+        
+        .mobile-menu-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--gray);
+            text-decoration: none;
+            font-size: 0.8rem;
+        }
+        
+        .mobile-menu-item i {
+            font-size: 1.2rem;
+            margin-bottom: 0.3rem;
+        }
+        
+        .mobile-menu-item.active {
+            color: var(--primary);
+        }
+        
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .mobile-menu {
+                display: block;
+            }
+            
+            .sidebar {
+                display: none;
+            }
+            
+            .container {
+                grid-template-columns: 1fr;
+                margin-bottom: 70px;
+            }
+        }
+        
+        /* Accessibility Features */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+        
+        :focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+        
+        /* Dark Mode Support */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #121212;
+                color: #e0e0e0;
+            }
+            
+            header, .sidebar, .create-post, .post-card {
+                background-color: #1e1e1e;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+            }
+            
+            .tag, .post-tag {
+                background-color: #2d2d2d;
+                color: #e0e0e0;
+            }
+            
+            .tag:hover {
+                background-color: #3d3d3d;
+            }
+            
+            .tag.active {
+                background-color: var(--primary);
+            }
+            
+            .post-form textarea, .category-select select, .location-filter select {
+                background-color: #2d2d2d;
+                border-color: #3d3d3d;
+                color: #e0e0e0;
+            }
+            
+            .light-gray {
+                border-color: #3d3d3d;
+            }
+        }
+        
+        /* Connection Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-header h3 {
+            font-size: 1.3rem;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+        
+        .connection-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .connection-card {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+        }
+        
+        .connection-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-right: 1rem;
+        }
+        
+        .connection-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .connection-details {
+            flex: 1;
+        }
+        
+        .connection-details h4 {
+            margin-bottom: 0.3rem;
+        }
+        
+        .connection-stats {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+        }
+        
+        .stat-item i {
+            margin-right: 0.3rem;
+            color: var(--primary);
+        }
+        
+        .location-map {
+            height: 150px;
+            background-color: #f0f0f0;
+            border-radius: 8px;
+            margin: 1rem 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--gray);
+        }
+        
+        .connection-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .action-btn {
+            flex: 1;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .action-btn i {
+            margin-right: 0.5rem;
+        }
+        
+        .message-btn {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .call-btn {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        /* AI Suggestion */
+        .ai-suggestion {
+            background-color: #e8f5e9;
+            border-left: 4px solid var(--secondary);
+            padding: 1rem;
+            border-radius: 0 8px 8px 0;
+            margin-top: 1.5rem;
+        }
+        
+        .ai-suggestion h4 {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            color: var(--secondary);
+        }
+        
+        .ai-suggestion h4 i {
+            margin-right: 0.5rem;
+        }
+        
+        /* Distance indicator */
+        .distance-indicator {
+            height: 10px;
+            background: linear-gradient(90deg, var(--secondary) 0%, var(--warning) 50%, var(--accent) 100%);
+            border-radius: 5px;
+            margin: 1rem 0;
+            position: relative;
+        }
+        
+        .distance-marker {
+            position: absolute;
+            top: -5px;
+            width: 20px;
+            height: 20px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .distance-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
     </style>
 </head>
 <body>
-    <!-- ہیڈر نیویگیشن (پہلے جیسا ہی) -->
+    <!-- Header Navigation -->
+    <header>
+        <nav class="navbar">
+            <a href="#" class="logo">
+                <i class="fas fa-hands-helping"></i>
+                <span>SocialConnect</span>
+            </a>
+            
+            <div class="nav-links">
+                <a href="#" class="active">Home</a>
+                <a href="#">Messages</a>
+                <a href="#">My Requests</a>
+                <a href="#">My Offers</a>
+                <a href="#">Notifications</a>
+                <div class="user-profile">
+                    <img src="https://randomuser.me/api/portraits/women/45.jpg" alt="User profile">
+                </div>
+            </div>
+        </nav>
+    </header>
     
+    <!-- Main Content -->
     <div class="container">
-        <!-- سائیڈبار (پہلے جیسا ہی) -->
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="user-card">
+                <div class="user-avatar">
+                    <img src="https://randomuser.me/api/portraits/women/45.jpg" alt="User avatar">
+                </div>
+                <div class="user-info">
+                    <h3>Sarah Johnson</h3>
+                    <p>Offering Help</p>
+                    <div class="reputation">
+                        <i class="fas fa-star"></i>
+                        <span>4.8 (24)</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mode-toggle">
+                <label class="toggle-switch">
+                    <input type="checkbox" checked>
+                    <span class="slider"></span>
+                </label>
+                <div class="toggle-labels">
+                    <span>Seek Help</span>
+                    <span class="active-label">Offer Help</span>
+                </div>
+            </div>
+            
+            <div class="filter-section">
+                <h4>Filter by Category</h4>
+                <div class="category-tags">
+                    <div class="tag active">All</div>
+                    <div class="tag">Emotional Support</div>
+                    <div class="tag">Technical Help</div>
+                    <div class="tag">Physical Aid</div>
+                    <div class="tag">Daily Tasks</div>
+                    <div class="tag">Education</div>
+                    <div class="tag">Health</div>
+                </div>
+            </div>
+            
+            <div class="filter-section">
+                <h4>Filter by Location</h4>
+                <div class="location-filter">
+                    <select>
+                        <option>Within 1 mile</option>
+                        <option selected>Within 5 miles</option>
+                        <option>Within 10 miles</option>
+                        <option>Within 25 miles</option>
+                        <option>Any distance</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="filter-section">
+                <h4>My Skills</h4>
+                <div class="category-tags">
+                    <div class="tag">Counseling</div>
+                    <div class="tag">Tech Support</div>
+                    <div class="tag">Tutoring</div>
+                    <div class="tag">+ Add Skill</div>
+                </div>
+            </div>
+            
+            <div class="filter-section">
+                <h4>My Needs</h4>
+                <div class="category-tags">
+                    <div class="tag">Home Repair</div>
+                    <div class="tag">Childcare</div>
+                    <div class="tag">Transportation</div>
+                    <div class="tag">+ Add Need</div>
+                </div>
+            </div>
+        </aside>
         
-        <!-- مین کنٹینٹ ایریا -->
+        <!-- Main Content Area -->
         <main class="main-content">
-            <!-- پوسٹ بنائیں سیکشن -->
+            <!-- Create Post -->
             <section class="create-post">
-                <h2 id="post-heading">Create a Help Offer</h2>
-                <form class="post-form" id="post-form">
-                    <textarea id="post-content" placeholder="What kind of help can you offer? Be specific about your skills and availability..."></textarea>
+                <h2>Create a Help Offer</h2>
+                <form class="post-form">
+                    <textarea placeholder="What kind of help can you offer? Be specific about your skills and availability..."></textarea>
                     <div class="post-options">
                         <div class="category-select">
-                            <select id="post-category">
-                                <option value="">Select a category</option>
+                            <select>
+                                <option>Select a category</option>
                                 <option>Emotional Support</option>
                                 <option>Technical Help</option>
                                 <option>Physical Aid</option>
@@ -41,515 +921,369 @@
                 </form>
             </section>
             
-            <!-- پوسٹس فیڈ -->
-            <section class="posts-feed" id="posts-feed">
-                <h2 class="sr-only">Help Requests Feed</h2>
-                <!-- پوسٹس یہاں ڈائنامکلی لوڈ ہوں گی -->
+            <!-- Posts Feed -->
+            <section class="posts-feed">
+                <h2>Help Requests Near You</h2>
+                
+                <!-- Post Card 1 -->
+                <article class="post-card" data-user-id="user1" data-location="37.7749,-122.4194">
+                    <div class="post-header">
+                        <div class="post-avatar">
+                            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User avatar">
+                        </div>
+                        <div class="post-user">
+                            <h4>Michael Chen</h4>
+                            <p>Seeking Help • 15 min ago</p>
+                        </div>
+                        <div class="post-distance">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>1.2 miles away</span>
+                        </div>
+                    </div>
+                    
+                    <div class="post-content">
+                        <p>I'm feeling really isolated since moving to the city and could use someone to talk to. Would appreciate weekly video calls or coffee meetups.</p>
+                    </div>
+                    
+                    <div class="post-tags">
+                        <div class="post-tag">Emotional Support</div>
+                        <div class="post-tag">Weekly</div>
+                        <div class="post-tag">Video Call</div>
+                    </div>
+                    
+                    <div class="post-actions">
+                        <button class="action-button">
+                            <i class="far fa-comment"></i>
+                            <span>12 Comments</span>
+                        </button>
+                        <button class="help-button" onclick="showConnectionModal('user1')">Offer Help</button>
+                    </div>
+                </article>
+                
+                <!-- Post Card 2 -->
+                <article class="post-card" data-user-id="user2" data-location="37.7812,-122.4317">
+                    <div class="post-header">
+                        <div class="post-avatar">
+                            <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="User avatar">
+                        </div>
+                        <div class="post-user">
+                            <h4>Priya Patel</h4>
+                            <p>Seeking Help • 45 min ago</p>
+                        </div>
+                        <div class="post-distance">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>3.7 miles away</span>
+                        </div>
+                    </div>
+                    
+                    <div class="post-content">
+                        <p>Need help setting up my new laptop and transferring files from my old one. Not very tech-savvy and would appreciate patient guidance.</p>
+                    </div>
+                    
+                    <div class="post-tags">
+                        <div class="post-tag">Technical Help</div>
+                        <div class="post-tag">One-time</div>
+                        <div class="post-tag">In-person</div>
+                    </div>
+                    
+                    <div class="post-actions">
+                        <button class="action-button">
+                            <i class="far fa-comment"></i>
+                            <span>5 Comments</span>
+                        </button>
+                        <button class="help-button" onclick="showConnectionModal('user2')">Offer Help</button>
+                    </div>
+                </article>
+                
+                <!-- Post Card 3 -->
+                <article class="post-card" data-user-id="user3" data-location="37.7689,-122.4194">
+                    <div class="post-header">
+                        <div class="post-avatar">
+                            <img src="https://randomuser.me/api/portraits/men/75.jpg" alt="User avatar">
+                        </div>
+                        <div class="post-user">
+                            <h4>David Wilson</h4>
+                            <p>Seeking Help • 2 hours ago</p>
+                        </div>
+                        <div class="post-distance">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>0.8 miles away</span>
+                        </div>
+                    </div>
+                    
+                    <div class="post-content">
+                        <p>Recovering from knee surgery and need help with grocery shopping for the next 2 weeks. Can provide list and payment in advance.</p>
+                    </div>
+                    
+                    <div class="post-tags">
+                        <div class="post-tag">Physical Aid</div>
+                        <div class="post-tag">Short-term</div>
+                        <div class="post-tag">Errands</div>
+                    </div>
+                    
+                    <div class="post-actions">
+                        <button class="action-button">
+                            <i class="far fa-comment"></i>
+                            <span>8 Comments</span>
+                        </button>
+                        <button class="help-button" onclick="showConnectionModal('user3')">Offer Help</button>
+                    </div>
+                </article>
             </section>
         </main>
     </div>
     
-    <!-- چیٹ بٹن -->
-    <div class="chat-button" id="chat-button" aria-label="Open chat">
+    <!-- Chat Button -->
+    <div class="chat-button" aria-label="Open chat">
         <i class="fas fa-comment-dots"></i>
-        <div class="chat-badge" id="unread-count">0</div>
+        <div class="chat-badge">3</div>
     </div>
     
-    <!-- موبائل مینو (پہلے جیسا ہی) -->
-
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-functions-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
-
-    <!-- لوکیشن کے لیے اضافی لائبریریز -->
-    <script src="https://unpkg.com/geofirestore@6.0.0/dist/geofirestore.min.js"></script>
+    <!-- Mobile Menu -->
+    <nav class="mobile-menu">
+        <div class="mobile-menu-items">
+            <a href="#" class="mobile-menu-item active">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </a>
+            <a href="#" class="mobile-menu-item">
+                <i class="fas fa-search"></i>
+                <span>Search</span>
+            </a>
+            <a href="#" class="mobile-menu-item">
+                <i class="fas fa-comments"></i>
+                <span>Messages</span>
+            </a>
+            <a href="#" class="mobile-menu-item">
+                <i class="fas fa-bell"></i>
+                <span>Notifications</span>
+            </a>
+            <a href="#" class="mobile-menu-item">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </a>
+        </div>
+    </nav>
     
+    <!-- Connection Modal -->
+    <div class="modal" id="connectionModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-handshake"></i> Connection Made!</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            
+            <div class="connection-info">
+                <div class="connection-card">
+                    <div class="connection-avatar">
+                        <img src="https://randomuser.me/api/portraits/women/45.jpg" alt="Your profile">
+                    </div>
+                    <div class="connection-details">
+                        <h4>Sarah Johnson (You)</h4>
+                        <p>Offering: Counseling, Emotional Support</p>
+                        <div class="connection-stats">
+                            <div class="stat-item">
+                                <i class="fas fa-star"></i>
+                                <span>4.8 (24 reviews)</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>Online Now</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="connection-card">
+                    <div class="connection-avatar">
+                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Michael Chen">
+                    </div>
+                    <div class="connection-details">
+                        <h4>Michael Chen</h4>
+                        <p>Seeking: Emotional Support, Conversation</p>
+                        <div class="connection-stats">
+                            <div class="stat-item">
+                                <i class="fas fa-star"></i>
+                                <span>4.5 (18 reviews)</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>1.2 miles away</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="location-map">
+                    <i class="fas fa-map-marked-alt fa-2x"></i>
+                    <span>Interactive Map Showing Both Locations</span>
+                </div>
+                
+                <div class="distance-indicator">
+                    <div class="distance-marker" style="left: 20%;"></div>
+                </div>
+                <div class="distance-labels">
+                    <span>You</span>
+                    <span>1.2 miles</span>
+                    <span>Michael</span>
+                </div>
+                
+                <div class="ai-suggestion">
+                    <h4><i class="fas fa-robot"></i> AI Suggestion</h4>
+                    <p>Based on both your profiles and proximity, we suggest meeting at Central Cafe for coffee. 
+                       This neutral location is halfway between you both and known for its quiet atmosphere, 
+                       perfect for conversation. Available times: Tomorrow 2-4 PM or Friday 10 AM-12 PM.</p>
+                </div>
+                
+                <div class="connection-actions">
+                    <button class="action-btn message-btn">
+                        <i class="fas fa-comment"></i>
+                        <span>Send Message</span>
+                    </button>
+                    <button class="action-btn call-btn">
+                        <i class="fas fa-phone-alt"></i>
+                        <span>Voice Call</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Firebase کنفیگریشن
+        // Firebase Configuration
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "socialconnect-app.firebaseapp.com",
-            projectId: "socialconnect-app",
-            storageBucket: "socialconnect-app.appspot.com",
-            messagingSenderId: "1234567890",
-            appId: "1:1234567890:web:abcdef1234567890",
-            measurementId: "G-ABCDEF1234",
-            databaseURL: "https://socialconnect-app.firebaseio.com"
+            apiKey: "AIzaSyAAxl0xBc_nLkTRO3XwiedbBD7Vj417i5M",
+            authDomain: "smart-personal-helper.firebaseapp.com",
+            projectId: "smart-personal-helper",
+            storageBucket: "smart-personal-helper.appspot.com",
+            messagingSenderId: "63071338320",
+            appId: "1:63071338320:web:87851a90236a7df7ff3655",
+            measurementId: "G-MP9GQJYTQC"
         };
         
-        // Firebase کو انیشیلائز کریں
+        // Initialize Firebase
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
         
-        // Firebase سروسز
+        // Get Firebase services
         const auth = firebase.auth();
         const db = firebase.firestore();
-        const rtdb = firebase.database();
-        const functions = firebase.functions();
         
-        // جیو فائر اسٹور سیٹ اپ
-        const geofirestore = new GeoFirestore.GeoFirestore(db);
-        const geoPosts = geofirestore.collection('geoPosts');
-        
-        // گلوبل ویری ایبلز
-        let currentUser = null;
-        let userLocation = null;
-        let watchId = null;
-        let postsListener = null;
-        
-        // DOM ایلیمنٹس
+        // DOM Elements
         const modeToggle = document.querySelector('.mode-toggle input');
-        const postForm = document.getElementById('post-form');
-        const postsFeed = document.getElementById('posts-feed');
-        const chatButton = document.getElementById('chat-button');
-        const unreadCount = document.getElementById('unread-count');
+        const postForm = document.querySelector('.post-form');
+        const helpButtons = document.querySelectorAll('.help-button');
+        const modal = document.getElementById('connectionModal');
         
-        // ایونٹ لسٹنرز
+        // Event Listeners
         modeToggle.addEventListener('change', toggleHelpMode);
         postForm.addEventListener('submit', handlePostSubmit);
-        chatButton.addEventListener('click', openChat);
         
-        // ایپ انیشیلائزیشن
-        function initApp() {
-            auth.onAuthStateChanged(user => {
-                if (user) {
-                    currentUser = user;
-                    updateUserProfile();
-                    startLocationTracking();
-                    setupPostsListener();
-                    setupChatListener();
-                } else {
-                    // اگر یوزر لاگ ان نہیں ہے تو لاگ ان پیج پر ری ڈائریکٹ کریں
-                    window.location.href = '/login.html';
-                }
-            });
-        }
-        
-        // یوزر پروفائل کو اپ ڈیٹ کریں
-        function updateUserProfile() {
-            const userAvatar = document.querySelectorAll('.user-avatar img, .user-profile img');
-            const userName = document.querySelector('.user-info h3');
-            
-            userAvatar.forEach(img => {
-                img.src = currentUser.photoURL || 'https://randomuser.me/api/portraits/lego/1.jpg';
-                img.alt = currentUser.displayName;
-            });
-            
-            if (userName) {
-                userName.textContent = currentUser.displayName;
-            }
-            wow
-            // یوزر ڈیٹا بیس سے اضافی معلومات لوڈ کریں
-            db.collection('users').doc(currentUser.uid).get()
-                .then(doc => {
-                    if (doc.exists) {
-                        const userData = doc.data();
-                        document.querySelector('.user-info p').textContent = 
-                            modeToggle.checked ? 'Offering Help' : 'Seeking Help';
-                        document.querySelector('.reputation span').textContent = 
-                            `${userData.rating || '4.5'} (${userData.ratingCount || '10'})`;
-                    }
-                });
-        }
-        
-        // لوکیشن ٹریکنگ شروع کریں
-        function startLocationTracking() {
-            if (navigator.geolocation) {
-                // ریل ٹائم لوکیشن اپ ڈیٹس
-                watchId = navigator.geolocation.watchPosition(
-                    position => {
-                        userLocation = {
-                            lat: position.coords.latitude,
-                            lng: position.coords.longitude
-                        };
-                        
-                        // یوزر کی لوکیشن کو ڈیٹا بیس میں اپ ڈیٹ کریں
-                        if (currentUser) {
-                            rtdb.ref(`userLocations/${currentUser.uid}`).set({
-                                coordinates: {
-                                    latitude: userLocation.lat,
-                                    longitude: userLocation.lng
-                                },
-                                lastUpdated: firebase.database.ServerValue.TIMESTAMP
-                            });
-                            
-                            // پوسٹس کو دوبارہ لوڈ کریں تاکہ نئے فاصلے ظاہر ہوں
-                            if (postsListener) {
-                                postsListener();
-                            }
-                        }
-                    },
-                    error => {
-                        console.error('Geolocation error:', error);
-                        alert('Location access is required for this app to work properly.');
-                    },
-                    { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
-                );
-            } else {
-                alert('Geolocation is not supported by your browser.');
-            }
-        }
-        
-        // پوسٹس لسٹنر سیٹ اپ کریں
-        function setupPostsListener() {
-            const locationFilter = document.querySelector('.location-filter select');
-            const categoryFilter = document.querySelectorAll('.category-tags .tag');
-            
-            // ڈیفالٹ فلٹرز
-            let radius = 8; // 8 کلومیٹر
-            let category = 'All';
-            
-            // لوکیشن فلٹر ایونٹ
-            locationFilter.addEventListener('change', () => {
-                const value = locationFilter.value;
-                if (value.includes('1 mile')) radius = 1.6;
-                else if (value.includes('5 miles')) radius = 8;
-                else if (value.includes('10 miles')) radius = 16;
-                else if (value.includes('25 miles')) radius = 40;
-                else radius = 10000; // تمام لوکیشنز
-                
-                if (postsListener) {
-                    postsListener();
-                }
-            });
-            
-            // کیٹیگری فلٹر ایونٹس
-            categoryFilter.forEach(tag => {
-                tag.addEventListener('click', () => {
-                    categoryFilter.forEach(t => t.classList.remove('active'));
-                    tag.classList.add('active');
-                    category = tag.textContent;
-                    
-                    if (postsListener) {
-                        postsListener();
-                    }
-                });
-            });
-            
-            // پوسٹس کو لوڈ اور ڈسپلے کریں
-            postsListener = () => {
-                if (!userLocation) return;
-                
-                // موجودہ پوسٹس کو صاف کریں
-                postsFeed.innerHTML = '';
-                
-                // جیو کوئری بنائیں
-                const query = geoPosts.near({
-                    center: new firebase.firestore.GeoPoint(userLocation.lat, userLocation.lng),
-                    radius: radius
-                });
-                
-                // کیٹیگری فلٹر لاگو کریں
-                let finalQuery = query;
-                if (category !== 'All') {
-                    finalQuery = query.where('category', '==', category);
-                }
-                
-                // موڈ کے مطابق فلٹر کریں
-                const isOfferingHelp = modeToggle.checked;
-                finalQuery = finalQuery.where('isHelpRequest', '==', isOfferingHelp);
-                
-                // پوسٹس کو لوڈ کریں
-                finalQuery.limit(20).get()
-                    .then(snapshot => {
-                        snapshot.docs.forEach(doc => {
-                            const post = doc.data();
-                            displayPost(post, doc.id);
-                        });
-                    })
-                    .catch(error => {
-                        console.error('Error loading posts:', error);
-                    });
-            };
-            
-            // پہلی بار پوسٹس لوڈ کریں
-            postsListener();
-        }
-        
-        // پوسٹ کو ڈسپلے کریں
-        function displayPost(post, postId) {
-            // فاصلے کا حساب لگائیں
-            let distanceText = 'Unknown distance';
-            if (userLocation && post.location) {
-                const distance = calculateDistance(
-                    userLocation.lat, 
-                    userLocation.lng,
-                    post.location.latitude,
-                    post.location.longitude
-                );
-                distanceText = `${distance.toFixed(1)} km away`;
-            }
-            
-            // تخلیق کا وقت فارمیٹ کریں
-            const timeAgo = formatTimeAgo(post.createdAt?.toDate());
-            
-            // پوسٹ کارڈ بنائیں
-            const postCard = document.createElement('article');
-            postCard.className = 'post-card';
-            postCard.dataset.postId = postId;
-            postCard.innerHTML = `
-                <div class="post-header">
-                    <div class="post-avatar">
-                        <img src="${post.userPhotoURL}" alt="${post.userName}">
-                    </div>
-                    <div class="post-user">
-                        <h4>${post.userName}</h4>
-                        <p>${post.isHelpRequest ? 'Seeking Help' : 'Offering Help'} • ${timeAgo}</p>
-                    </div>
-                    <div class="post-distance">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span>${distanceText}</span>
-                    </div>
-                </div>
-                
-                <div class="post-content">
-                    <p>${post.content}</p>
-                </div>
-                
-                <div class="post-tags">
-                    <div class="post-tag">${post.category}</div>
-                    ${post.tags?.map(tag => `<div class="post-tag">${tag}</div>`).join('') || ''}
-                </div>
-                
-                <div class="post-actions">
-                    <button class="action-button">
-                        <i class="far fa-comment"></i>
-                        <span>${post.comments?.length || 0} Comments</span>
-                    </button>
-                    <button class="help-button" data-post-id="${postId}">
-                        ${post.isHelpRequest ? 'Offer Help' : 'Request Help'}
-                    </button>
-                </div>
-            `;
-            
-            // ہیلپ بٹن کے لیے ایونٹ لسٹنر شامل کریں
-            const helpButton = postCard.querySelector('.help-button');
-            helpButton.addEventListener('click', handleHelpOffer);
-            
-            // فیڈ میں پوسٹ شامل کریں
-            postsFeed.appendChild(postCard);
-        }
-        
-        // ہیلپ موڈ کو ٹوگل کریں
+        // Functions
         function toggleHelpMode(e) {
             const labels = document.querySelectorAll('.toggle-labels span');
             if (e.target.checked) {
                 labels[0].classList.remove('active-label');
                 labels[1].classList.add('active-label');
-                document.getElementById('post-heading').textContent = 'Create a Help Offer';
-                document.getElementById('post-content').placeholder = 
-                    'What kind of help can you offer? Be specific about your skills and availability...';
+                document.querySelector('.create-post h2').textContent = 'Create a Help Offer';
+                document.querySelector('.post-form textarea').placeholder = 'What kind of help can you offer? Be specific about your skills and availability...';
             } else {
                 labels[0].classList.add('active-label');
                 labels[1].classList.remove('active-label');
-                document.getElementById('post-heading').textContent = 'Create a Help Request';
-                document.getElementById('post-content').placeholder = 
-                    'What kind of help do you need? Be specific about your needs and timeframe...';
+                document.querySelector('.create-post h2').textContent = 'Create a Help Request';
+                document.querySelector('.post-form textarea').placeholder = 'What kind of help do you need? Be specific about your needs and timeframe...';
             }
-            
-            // پوسٹس کو دوبارہ لوڈ کریں
-            if (postsListener) {
-                postsListener();
-            }
-            
-            // یوزر پروفائل کو اپ ڈیٹ کریں
-            updateUserProfile();
         }
         
-        // پوسٹ جمع کرائیں
         async function handlePostSubmit(e) {
             e.preventDefault();
-            const content = document.getElementById('post-content').value.trim();
-            const category = document.getElementById('post-category').value;
+            const content = e.target.querySelector('textarea').value.trim();
+            const category = e.target.querySelector('select').value;
             
-            if (!content || !category) {
+            if (!content || category === 'Select a category') {
                 alert('Please fill all fields');
                 return;
             }
             
             try {
-                const isOfferingHelp = modeToggle.checked;
+                const user = auth.currentUser;
+                if (!user) {
+                    alert('Please sign in to post');
+                    return;
+                }
                 
-                // پوسٹ ڈیٹا تیار کریں
+                const isOfferingHelp = modeToggle.checked;
                 const postData = {
-                    userId: currentUser.uid,
-                    userName: currentUser.displayName,
-                    userPhotoURL: currentUser.photoURL || 'https://randomuser.me/api/portraits/lego/1.jpg',
+                    userId: user.uid,
+                    userName: user.displayName,
+                    userPhotoURL: user.photoURL || 'https://randomuser.me/api/portraits/lego/1.jpg',
                     content,
                     category,
                     isHelpRequest: !isOfferingHelp,
                     isHelpOffer: isOfferingHelp,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    location: null, // Would be populated with actual location data
                     status: 'active',
                     comments: [],
-                    helpers: [],
-                    tags: []
+                    helpers: []
                 };
                 
-                // جیو لوکیشن شامل کریں اگر دستیاب ہے
-                if (userLocation) {
-                    postData.location = new firebase.firestore.GeoPoint(
-                        userLocation.lat,
-                        userLocation.lng
-                    );
-                }
-                
-                // پوسٹ کو ڈیٹا بیس میں شامل کریں
-                const docRef = await db.collection('posts').add(postData);
-                
-                // جیو لوکیشن اسٹور میں بھی شامل کریں
-                if (userLocation) {
-                    await geoPosts.add({
-                        ...postData,
-                        coordinates: new firebase.firestore.GeoPoint(
-                            userLocation.lat,
-                            userLocation.lng
-                        )
-                    });
-                }
-                
-                // فارم ری سیٹ کریں
+                await db.collection('posts').add(postData);
                 e.target.reset();
-                
-                // کامیابی کا میسج
                 alert('Post created successfully!');
-                
             } catch (error) {
                 console.error('Error creating post:', error);
                 alert('Failed to create post. Please try again.');
             }
         }
         
-        // ہیلپ کی پیشکش کریں
-        async function handleHelpOffer(e) {
-            const postId = e.target.dataset.postId;
-            
-            try {
-                // پوسٹ کو ڈیٹا بیس سے حاصل کریں
-                const postRef = db.collection('posts').doc(postId);
-                const postDoc = await postRef.get();
-                
-                if (!postDoc.exists) {
-                    alert('Post not found');
-                    return;
-                }
-                
-                const post = postDoc.data();
-                
-                // چیک کریں کہ یوزر اپنی ہی پوسٹ پر ہیلپ کی پیشکش نہیں کر رہا
-                if (post.userId === currentUser.uid) {
-                    alert('You cannot offer help on your own post');
-                    return;
-                }
-                
-                // یوزر کو ہیلپرز کی فہرست میں شامل کریں
-                await postRef.update({
-                    helpers: firebase.firestore.FieldValue.arrayUnion(currentUser.uid)
+        function showConnectionModal(userId) {
+            modal.style.display = 'flex';
+            // In a real app, we would fetch user data from Firestore
+            // and update the modal with actual user information
+        }
+        
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+        
+        // Initialize auth state listener
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                // User is signed in
+                console.log('User signed in:', user.displayName);
+                // Update UI with user data
+                document.querySelectorAll('.user-avatar img, .user-profile img').forEach(img => {
+                    img.src = user.photoURL || 'https://randomuser.me/api/portraits/lego/1.jpg';
                 });
-                
-                // چیٹ سیشن بنائیں
-                const chatId = [currentUser.uid, post.userId].sort().join('_');
-                const chatRef = db.collection('chats').doc(chatId);
-                
-                await chatRef.set({
-                    participants: [currentUser.uid, post.userId],
-                    participantNames: [currentUser.displayName, post.userName],
-                    participantPhotos: [
-                        currentUser.photoURL || 'https://randomuser.me/api/portraits/lego/1.jpg',
-                        post.userPhotoURL
-                    ],
-                    lastMessage: '',
-                    lastMessageTime: firebase.firestore.FieldValue.serverTimestamp(),
-                    postId: postId,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true });
-                
-                // ابتدائی میسج بھیجیں
-                await chatRef.collection('messages').add({
-                    senderId: currentUser.uid,
-                    senderName: currentUser.displayName,
-                    text: `I'd like to ${post.isHelpRequest ? 'offer help' : 'request help'} for your post: "${post.content.substring(0, 50)}..."`,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    type: 'system'
-                });
-                
-                // بٹن کو اپ ڈیٹ کریں
-                e.target.textContent = 'Connection Made';
-                e.target.disabled = true;
-                e.target.style.backgroundColor = 'var(--gray)';
-                
-                // کامیابی کا میسج
-                alert(`Your ${post.isHelpRequest ? 'offer to help' : 'request for help'} has been sent! You can now chat with ${post.userName}.`);
-                
-            } catch (error) {
-                console.error('Error offering help:', error);
-                alert('Failed to send help offer. Please try again.');
+                document.querySelector('.user-info h3').textContent = user.displayName;
+            } else {
+                // User is signed out
+                console.log('User signed out');
+                // Redirect to login or show guest UI
             }
+        });
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+        
+        // Simulate location-based matching
+        function updateDistances() {
+            document.querySelectorAll('.post-card').forEach(card => {
+                const distance = (Math.random() * 5).toFixed(1);
+                card.querySelector('.post-distance span').textContent = `${distance} miles away`;
+            });
         }
         
-        // چیٹ لسٹنر سیٹ اپ کریں
-        function setupChatListener() {
-            db.collection('chats')
-                .where('participants', 'array-contains', currentUser.uid)
-                .orderBy('lastMessageTime', 'desc')
-                .onSnapshot(snapshot => {
-                    let unread = 0;
-                    
-                    snapshot.docChanges().forEach(change => {
-                        if (change.type === 'added' || change.type === 'modified') {
-                            // یہاں آپ چیٹس کی فہرست کو اپ ڈیٹ کر سکتے ہیں
-                        }
-                    });
-                    
-                    // ان ریڈ میسجز کی تعداد کو اپ ڈیٹ کریں
-                    unreadCount.textContent = unread > 0 ? unread : '';
-                });
-        }
-        
-        // چیٹ ونڈو کھولیں
-        function openChat() {
-            // یہاں آپ ایک موڈل یا نئی ونڈو کھول سکتے ہیں جو چیٹس کو ڈسپلے کرے
-            alert('Chat window would open here with all your conversations');
-        }
-        
-        // فاصلے کا حساب لگانے کا فنکشن (Haversine formula)
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; // زمین کا رداس کلومیٹر میں
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = 
-                Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-                Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c;
-        }
-        
-        // وقت کو "X minutes ago" فارمیٹ میں تبدیل کریں
-        function formatTimeAgo(date) {
-            if (!date) return 'Just now';
-            
-            const seconds = Math.floor((new Date() - date) / 1000);
-            let interval = Math.floor(seconds / 31536000);
-            
-            if (interval >= 1) return `${interval} year${interval === 1 ? '' : 's'} ago`;
-            interval = Math.floor(seconds / 2592000);
-            if (interval >= 1) return `${interval} month${interval === 1 ? '' : 's'} ago`;
-            interval = Math.floor(seconds / 86400);
-            if (interval >= 1) return `${interval} day${interval === 1 ? '' : 's'} ago`;
-            interval = Math.floor(seconds / 3600);
-            if (interval >= 1) return `${interval} hour${interval === 1 ? '' : 's'} ago`;
-            interval = Math.floor(seconds / 60);
-            if (interval >= 1) return `${interval} minute${interval === 1 ? '' : 's'} ago`;
-            return 'Just now';
-        }
-        
-        // ایپ کو شروع کریں
-        initApp();
+        // Initial update
+        updateDistances();
+        // Update distances periodically to simulate movement
+        setInterval(updateDistances, 30000);
     </script>
 </body>
 </html>
