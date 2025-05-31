@@ -3,12 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SocialConnect - Community Help Network</title>
+    <title>SocialConnect - Enhanced Community Network</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
     <style>
         :root {
             --primary: #4285F4;
@@ -78,10 +75,32 @@
             text-decoration: none;
             font-weight: 500;
             transition: color 0.2s;
+            position: relative;
         }
         
         .nav-links a:hover {
             color: var(--primary);
+        }
+        
+        .nav-links a.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: var(--accent);
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
         }
         
         .user-profile {
@@ -94,12 +113,158 @@
             justify-content: center;
             overflow: hidden;
             cursor: pointer;
+            position: relative;
         }
         
         .user-profile img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+        
+        .profile-dropdown {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            width: 220px;
+            z-index: 1000;
+            display: none;
+            overflow: hidden;
+        }
+        
+        .profile-dropdown.active {
+            display: block;
+        }
+        
+        .dropdown-header {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .dropdown-header .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-right: 0.8rem;
+        }
+        
+        .dropdown-header .user-info {
+            flex: 1;
+        }
+        
+        .dropdown-header .user-info h4 {
+            font-size: 0.95rem;
+            margin-bottom: 0.2rem;
+        }
+        
+        .dropdown-header .user-info p {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+        
+        .dropdown-item {
+            padding: 0.8rem 1rem;
+            display: flex;
+            align-items: center;
+            color: var(--dark);
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+        
+        .dropdown-item:hover {
+            background-color: var(--light);
+        }
+        
+        .dropdown-item i {
+            width: 24px;
+            margin-right: 0.8rem;
+            color: var(--gray);
+        }
+        
+        .dropdown-divider {
+            height: 1px;
+            background-color: var(--light-gray);
+            margin: 0.2rem 0;
+        }
+        
+        .notification-dropdown {
+            position: absolute;
+            top: 40px;
+            right: -20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            width: 320px;
+            z-index: 1000;
+            display: none;
+            overflow: hidden;
+        }
+        
+        .notification-dropdown.active {
+            display: block;
+        }
+        
+        .notification-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--light-gray);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .notification-header h4 {
+            font-size: 1rem;
+        }
+        
+        .mark-read {
+            color: var(--primary);
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        
+        .notification-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .notification-item {
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid var(--light-gray);
+            transition: background-color 0.2s;
+            cursor: pointer;
+        }
+        
+        .notification-item:hover {
+            background-color: var(--light);
+        }
+        
+        .notification-item.unread {
+            background-color: #f0f7ff;
+        }
+        
+        .notification-content {
+            font-size: 0.9rem;
+            margin-bottom: 0.3rem;
+        }
+        
+        .notification-time {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+        
+        .notification-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            margin-right: 0.5rem;
         }
         
         /* Main Content Layout */
@@ -263,6 +428,37 @@
         .tag.active {
             background-color: var(--primary);
             color: white;
+        }
+        
+        .skill-item, .need-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            background: #f0f4ff;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .skill-actions, .need-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .edit-btn, .delete-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--gray);
+            font-size: 0.8rem;
+        }
+        
+        .edit-btn:hover {
+            color: var(--primary);
+        }
+        
+        .delete-btn:hover {
+            color: var(--accent);
         }
         
         .location-filter {
@@ -466,6 +662,22 @@
             background-color: #2d9241;
         }
         
+        .post-edit-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .edit-post-btn {
+            background-color: var(--warning);
+            color: var(--dark);
+        }
+        
+        .delete-post-btn {
+            background-color: var(--accent);
+            color: white;
+        }
+        
         /* Chat Button */
         .chat-button {
             position: fixed;
@@ -529,6 +741,7 @@
             color: var(--gray);
             text-decoration: none;
             font-size: 0.8rem;
+            position: relative;
         }
         
         .mobile-menu-item i {
@@ -538,6 +751,21 @@
         
         .mobile-menu-item.active {
             color: var(--primary);
+        }
+        
+        .mobile-badge {
+            position: absolute;
+            top: -5px;
+            right: 8px;
+            background-color: var(--accent);
+            color: white;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
         }
         
         @media (max-width: 768px) {
@@ -584,7 +812,8 @@
                 color: #e0e0e0;
             }
             
-            header, .sidebar, .create-post, .post-card {
+            header, .sidebar, .create-post, .post-card, 
+            .profile-dropdown, .notification-dropdown {
                 background-color: #1e1e1e;
                 box-shadow: 0 1px 3px rgba(0,0,0,0.5);
             }
@@ -610,6 +839,18 @@
             
             .light-gray {
                 border-color: #3d3d3d;
+            }
+            
+            .skill-item, .need-item {
+                background: #2a2a4a;
+            }
+            
+            .notification-item.unread {
+                background-color: #1a2a3a;
+            }
+            
+            .dropdown-item:hover {
+                background-color: #2d2d2d;
             }
         }
         
@@ -797,493 +1038,1118 @@
             font-size: 0.8rem;
             color: var(--gray);
         }
+        
+        /* Profile Management */
+        .profile-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .profile-modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .profile-form {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-group input, 
+        .form-group textarea,
+        .form-group select {
+            padding: 0.75rem;
+            border: 1px solid var(--light-gray);
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .save-btn {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .cancel-btn {
+            background-color: var(--light-gray);
+            color: var(--dark);
+        }
+        
+        /* Login Page */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f5f7fa;
+            padding: 1rem;
+        }
+        
+        .login-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        
+        .login-logo {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+        
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+        
+        .form-input {
+            padding: 0.8rem;
+            border: 1px solid var(--light-gray);
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        
+        .login-button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .login-button:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .login-footer {
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .login-footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
-    <!-- Header Navigation -->
-    <header>
-        <nav class="navbar">
-            <a href="#" class="logo">
+    <!-- Login Page (Initially hidden) -->
+    <div id="loginPage" class="login-container" style="display: none;">
+        <div class="login-card">
+            <div class="login-logo">
                 <i class="fas fa-hands-helping"></i>
-                <span>SocialConnect</span>
-            </a>
-            
-            <div class="nav-links">
-                <a href="#" class="active">Home</a>
-                <a href="#">Messages</a>
-                <a href="#">My Requests</a>
-                <a href="#">My Offers</a>
-                <a href="#">Notifications</a>
-                <div class="user-profile">
-                    <img src="https://randomuser.me/api/portraits/women/45.jpg" alt="User profile">
-                </div>
+                <h2>SocialConnect</h2>
             </div>
-        </nav>
-    </header>
-    
-    <!-- Main Content -->
-    <div class="container">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="user-card">
-                <div class="user-avatar">
-                    <img src="https://randomuser.me/api/portraits/women/45.jpg" alt="User avatar">
-                </div>
-                <div class="user-info">
-                    <h3>Sarah Johnson</h3>
-                    <p>Offering Help</p>
-                    <div class="reputation">
-                        <i class="fas fa-star"></i>
-                        <span>4.8 (24)</span>
-                    </div>
-                </div>
+            <form class="login-form" id="loginForm">
+                <input type="email" class="form-input" placeholder="Email" required>
+                <input type="password" class="form-input" placeholder="Password" required>
+                <button type="submit" class="login-button">Sign In</button>
+            </form>
+            <div class="login-footer">
+                <p>Don't have an account? <a href="#" id="signupLink">Sign Up</a></p>
+                <p><a href="#">Forgot Password?</a></p>
             </div>
-            
-            <div class="mode-toggle">
-                <label class="toggle-switch">
-                    <input type="checkbox" checked>
-                    <span class="slider"></span>
-                </label>
-                <div class="toggle-labels">
-                    <span>Seek Help</span>
-                    <span class="active-label">Offer Help</span>
-                </div>
-            </div>
-            
-            <div class="filter-section">
-                <h4>Filter by Category</h4>
-                <div class="category-tags">
-                    <div class="tag active">All</div>
-                    <div class="tag">Emotional Support</div>
-                    <div class="tag">Technical Help</div>
-                    <div class="tag">Physical Aid</div>
-                    <div class="tag">Daily Tasks</div>
-                    <div class="tag">Education</div>
-                    <div class="tag">Health</div>
-                </div>
-            </div>
-            
-            <div class="filter-section">
-                <h4>Filter by Location</h4>
-                <div class="location-filter">
-                    <select>
-                        <option>Within 1 mile</option>
-                        <option selected>Within 5 miles</option>
-                        <option>Within 10 miles</option>
-                        <option>Within 25 miles</option>
-                        <option>Any distance</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="filter-section">
-                <h4>My Skills</h4>
-                <div class="category-tags">
-                    <div class="tag">Counseling</div>
-                    <div class="tag">Tech Support</div>
-                    <div class="tag">Tutoring</div>
-                    <div class="tag">+ Add Skill</div>
-                </div>
-            </div>
-            
-            <div class="filter-section">
-                <h4>My Needs</h4>
-                <div class="category-tags">
-                    <div class="tag">Home Repair</div>
-                    <div class="tag">Childcare</div>
-                    <div class="tag">Transportation</div>
-                    <div class="tag">+ Add Need</div>
-                </div>
-            </div>
-        </aside>
-        
-        <!-- Main Content Area -->
-        <main class="main-content">
-            <!-- Create Post -->
-            <section class="create-post">
-                <h2>Create a Help Offer</h2>
-                <form class="post-form">
-                    <textarea placeholder="What kind of help can you offer? Be specific about your skills and availability..."></textarea>
-                    <div class="post-options">
-                        <div class="category-select">
-                            <select>
-                                <option>Select a category</option>
-                                <option>Emotional Support</option>
-                                <option>Technical Help</option>
-                                <option>Physical Aid</option>
-                                <option>Daily Tasks</option>
-                                <option>Education</option>
-                                <option>Health</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="post-button">Post Offer</button>
-                    </div>
-                </form>
-            </section>
-            
-            <!-- Posts Feed -->
-            <section class="posts-feed">
-                <h2>Help Requests Near You</h2>
-                
-                <!-- Post Card 1 -->
-                <article class="post-card" data-user-id="user1" data-location="37.7749,-122.4194">
-                    <div class="post-header">
-                        <div class="post-avatar">
-                            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User avatar">
-                        </div>
-                        <div class="post-user">
-                            <h4>Michael Chen</h4>
-                            <p>Seeking Help • 15 min ago</p>
-                        </div>
-                        <div class="post-distance">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <span>1.2 miles away</span>
-                        </div>
-                    </div>
-                    
-                    <div class="post-content">
-                        <p>I'm feeling really isolated since moving to the city and could use someone to talk to. Would appreciate weekly video calls or coffee meetups.</p>
-                    </div>
-                    
-                    <div class="post-tags">
-                        <div class="post-tag">Emotional Support</div>
-                        <div class="post-tag">Weekly</div>
-                        <div class="post-tag">Video Call</div>
-                    </div>
-                    
-                    <div class="post-actions">
-                        <button class="action-button">
-                            <i class="far fa-comment"></i>
-                            <span>12 Comments</span>
-                        </button>
-                        <button class="help-button" onclick="showConnectionModal('user1')">Offer Help</button>
-                    </div>
-                </article>
-                
-                <!-- Post Card 2 -->
-                <article class="post-card" data-user-id="user2" data-location="37.7812,-122.4317">
-                    <div class="post-header">
-                        <div class="post-avatar">
-                            <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="User avatar">
-                        </div>
-                        <div class="post-user">
-                            <h4>Priya Patel</h4>
-                            <p>Seeking Help • 45 min ago</p>
-                        </div>
-                        <div class="post-distance">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <span>3.7 miles away</span>
-                        </div>
-                    </div>
-                    
-                    <div class="post-content">
-                        <p>Need help setting up my new laptop and transferring files from my old one. Not very tech-savvy and would appreciate patient guidance.</p>
-                    </div>
-                    
-                    <div class="post-tags">
-                        <div class="post-tag">Technical Help</div>
-                        <div class="post-tag">One-time</div>
-                        <div class="post-tag">In-person</div>
-                    </div>
-                    
-                    <div class="post-actions">
-                        <button class="action-button">
-                            <i class="far fa-comment"></i>
-                            <span>5 Comments</span>
-                        </button>
-                        <button class="help-button" onclick="showConnectionModal('user2')">Offer Help</button>
-                    </div>
-                </article>
-                
-                <!-- Post Card 3 -->
-                <article class="post-card" data-user-id="user3" data-location="37.7689,-122.4194">
-                    <div class="post-header">
-                        <div class="post-avatar">
-                            <img src="https://randomuser.me/api/portraits/men/75.jpg" alt="User avatar">
-                        </div>
-                        <div class="post-user">
-                            <h4>David Wilson</h4>
-                            <p>Seeking Help • 2 hours ago</p>
-                        </div>
-                        <div class="post-distance">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <span>0.8 miles away</span>
-                        </div>
-                    </div>
-                    
-                    <div class="post-content">
-                        <p>Recovering from knee surgery and need help with grocery shopping for the next 2 weeks. Can provide list and payment in advance.</p>
-                    </div>
-                    
-                    <div class="post-tags">
-                        <div class="post-tag">Physical Aid</div>
-                        <div class="post-tag">Short-term</div>
-                        <div class="post-tag">Errands</div>
-                    </div>
-                    
-                    <div class="post-actions">
-                        <button class="action-button">
-                            <i class="far fa-comment"></i>
-                            <span>8 Comments</span>
-                        </button>
-                        <button class="help-button" onclick="showConnectionModal('user3')">Offer Help</button>
-                    </div>
-                </article>
-            </section>
-        </main>
-    </div>
-    
-    <!-- Chat Button -->
-    <div class="chat-button" aria-label="Open chat">
-        <i class="fas fa-comment-dots"></i>
-        <div class="chat-badge">3</div>
-    </div>
-    
-    <!-- Mobile Menu -->
-    <nav class="mobile-menu">
-        <div class="mobile-menu-items">
-            <a href="#" class="mobile-menu-item active">
-                <i class="fas fa-home"></i>
-                <span>Home</span>
-            </a>
-            <a href="#" class="mobile-menu-item">
-                <i class="fas fa-search"></i>
-                <span>Search</span>
-            </a>
-            <a href="#" class="mobile-menu-item">
-                <i class="fas fa-comments"></i>
-                <span>Messages</span>
-            </a>
-            <a href="#" class="mobile-menu-item">
-                <i class="fas fa-bell"></i>
-                <span>Notifications</span>
-            </a>
-            <a href="#" class="mobile-menu-item">
-                <i class="fas fa-user"></i>
-                <span>Profile</span>
-            </a>
         </div>
-    </nav>
+    </div>
     
-    <!-- Connection Modal -->
-    <div class="modal" id="connectionModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-handshake"></i> Connection Made!</h3>
-                <button class="close-btn" onclick="closeModal()">&times;</button>
-            </div>
-            
-            <div class="connection-info">
-                <div class="connection-card">
-                    <div class="connection-avatar">
-                        <img src="https://randomuser.me/api/portraits/women/45.jpg" alt="Your profile">
-                    </div>
-                    <div class="connection-details">
-                        <h4>Sarah Johnson (You)</h4>
-                        <p>Offering: Counseling, Emotional Support</p>
-                        <div class="connection-stats">
-                            <div class="stat-item">
-                                <i class="fas fa-star"></i>
-                                <span>4.8 (24 reviews)</span>
+    <!-- Main App (Initially visible) -->
+    <div id="mainApp">
+        <!-- Header Navigation -->
+        <header>
+            <nav class="navbar">
+                <a href="#" class="logo">
+                    <i class="fas fa-hands-helping"></i>
+                    <span>SocialConnect</span>
+                </a>
+                
+                <div class="nav-links">
+                    <a href="#" class="active">Home</a>
+                    <a href="#" id="messagesLink">Messages <span class="notification-badge">5</span></a>
+                    <a href="#" id="requestsLink">My Requests</a>
+                    <a href="#" id="offersLink">My Offers</a>
+                    <a href="#" id="notificationsLink">Notifications <span class="notification-badge">3</span></a>
+                    <div class="notification-dropdown" id="notificationDropdown">
+                        <div class="notification-header">
+                            <h4>Notifications</h4>
+                            <span class="mark-read">Mark all as read</span>
+                        </div>
+                        <div class="notification-list">
+                            <div class="notification-item unread">
+                                <div class="notification-content">
+                                    <span class="notification-dot"></span>
+                                    Michael accepted your help offer
+                                </div>
+                                <div class="notification-time">10 minutes ago</div>
                             </div>
-                            <div class="stat-item">
-                                <i class="fas fa-map-marker-alt"></i>
-                                <span>Online Now</span>
+                            <div class="notification-item unread">
+                                <div class="notification-content">
+                                    <span class="notification-dot"></span>
+                                    Priya sent you a message
+                                </div>
+                                <div class="notification-time">45 minutes ago</div>
+                            </div>
+                            <div class="notification-item">
+                                <div class="notification-content">
+                                    David commented on your post
+                                </div>
+                                <div class="notification-time">2 hours ago</div>
+                            </div>
+                            <div class="notification-item">
+                                <div class="notification-content">
+                                    New help request near you
+                                </div>
+                                <div class="notification-time">4 hours ago</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="user-profile" id="profileBtn">
+                        <img src="https://randomuser.me/api/portraits/women/45.jpg" alt="User profile">
+                        <div class="profile-dropdown" id="profileDropdown">
+                            <div class="dropdown-header">
+                                <div class="user-avatar">
+                                    <img src="https://randomuser.me/api/portraits/women/45.jpg" alt="User avatar">
+                                </div>
+                                <div class="user-info">
+                                    <h4>Sarah Johnson</h4>
+                                    <p>sarah@example.com</p>
+                                </div>
+                            </div>
+                            <a href="#" class="dropdown-item">
+                                <i class="fas fa-user"></i>
+                                <span>My Profile</span>
+                            </a>
+                            <a href="#" class="dropdown-item">
+                                <i class="fas fa-cog"></i>
+                                <span>Settings</span>
+                            </a>
+                            <a href="#" class="dropdown-item">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Privacy</span>
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="#" class="dropdown-item" id="logoutBtn">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>Logout</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+        
+        <!-- Main Content -->
+        <div class="container">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="user-card">
+                    <div class="user-avatar">
+                        <img src="https://randomuser.me/api/portraits/women/45.jpg" alt="User avatar">
+                    </div>
+                    <div class="user-info">
+                        <h3>Sarah Johnson</h3>
+                        <p>Offering Help</p>
+                        <div class="reputation">
+                            <i class="fas fa-star"></i>
+                            <span>4.8 (24)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mode-toggle">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="modeToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                    <div class="toggle-labels">
+                        <span>Seek Help</span>
+                        <span class="active-label">Offer Help</span>
+                    </div>
+                </div>
+                
+                <div class="filter-section">
+                    <h4>Filter by Category</h4>
+                    <div class="category-tags">
+                        <div class="tag active">All</div>
+                        <div class="tag">Emotional Support</div>
+                        <div class="tag">Technical Help</div>
+                        <div class="tag">Physical Aid</div>
+                        <div class="tag">Daily Tasks</div>
+                        <div class="tag">Education</div>
+                        <div class="tag">Health</div>
+                    </div>
+                </div>
+                
+                <div class="filter-section">
+                    <h4>Filter by Location</h4>
+                    <div class="location-filter">
+                        <select>
+                            <option>Within 1 mile</option>
+                            <option selected>Within 5 miles</option>
+                            <option>Within 10 miles</option>
+                            <option>Within 25 miles</option>
+                            <option>Any distance</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="filter-section">
+                    <h4>My Skills <button class="add-btn" id="addSkillBtn" style="float:right; background:none; border:none; cursor:pointer;"><i class="fas fa-plus"></i></button></h4>
+                    <div id="skillsList">
+                        <div class="skill-item">
+                            <span>Counseling</span>
+                            <div class="skill-actions">
+                                <button class="edit-btn"><i class="fas fa-edit"></i></button>
+                                <button class="delete-btn"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <div class="skill-item">
+                            <span>Tech Support</span>
+                            <div class="skill-actions">
+                                <button class="edit-btn"><i class="fas fa-edit"></i></button>
+                                <button class="delete-btn"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <div class="skill-item">
+                            <span>Tutoring</span>
+                            <div class="skill-actions">
+                                <button class="edit-btn"><i class="fas fa-edit"></i></button>
+                                <button class="delete-btn"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <div class="connection-card">
-                    <div class="connection-avatar">
-                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Michael Chen">
-                    </div>
-                    <div class="connection-details">
-                        <h4>Michael Chen</h4>
-                        <p>Seeking: Emotional Support, Conversation</p>
-                        <div class="connection-stats">
-                            <div class="stat-item">
-                                <i class="fas fa-star"></i>
-                                <span>4.5 (18 reviews)</span>
+                <div class="filter-section">
+                    <h4>My Needs <button class="add-btn" id="addNeedBtn" style="float:right; background:none; border:none; cursor:pointer;"><i class="fas fa-plus"></i></button></h4>
+                    <div id="needsList">
+                        <div class="need-item">
+                            <span>Home Repair</span>
+                            <div class="need-actions">
+                                <button class="edit-btn"><i class="fas fa-edit"></i></button>
+                                <button class="delete-btn"><i class="fas fa-trash"></i></button>
                             </div>
-                            <div class="stat-item">
+                        </div>
+                        <div class="need-item">
+                            <span>Childcare</span>
+                            <div class="need-actions">
+                                <button class="edit-btn"><i class="fas fa-edit"></i></button>
+                                <button class="delete-btn"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <div class="need-item">
+                            <span>Transportation</span>
+                            <div class="need-actions">
+                                <button class="edit-btn"><i class="fas fa-edit"></i></button>
+                                <button class="delete-btn"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+            
+            <!-- Main Content Area -->
+            <main class="main-content">
+                <!-- Create Post -->
+                <section class="create-post">
+                    <h2 id="postTitle">Create a Help Offer</h2>
+                    <form class="post-form" id="postForm">
+                        <textarea placeholder="What kind of help can you offer? Be specific about your skills and availability..." id="postContent"></textarea>
+                        <div class="post-options">
+                            <div class="category-select">
+                                <select id="postCategory">
+                                    <option>Select a category</option>
+                                    <option>Emotional Support</option>
+                                    <option>Technical Help</option>
+                                    <option>Physical Aid</option>
+                                    <option>Daily Tasks</option>
+                                    <option>Education</option>
+                                    <option>Health</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="post-button">Post Offer</button>
+                        </div>
+                    </form>
+                </section>
+                
+                <!-- Posts Feed -->
+                <section class="posts-feed">
+                    <h2>Help Requests Near You</h2>
+                    
+                    <!-- Post Card 1 -->
+                    <article class="post-card" data-user-id="user1" data-location="37.7749,-122.4194" id="post1">
+                        <div class="post-header">
+                            <div class="post-avatar">
+                                <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User avatar">
+                            </div>
+                            <div class="post-user">
+                                <h4>Michael Chen</h4>
+                                <p>Seeking Help • 15 min ago</p>
+                            </div>
+                            <div class="post-distance">
                                 <i class="fas fa-map-marker-alt"></i>
                                 <span>1.2 miles away</span>
                             </div>
                         </div>
+                        
+                        <div class="post-content">
+                            <p>I'm feeling really isolated since moving to the city and could use someone to talk to. Would appreciate weekly video calls or coffee meetups.</p>
+                        </div>
+                        
+                        <div class="post-tags">
+                            <div class="post-tag">Emotional Support</div>
+                            <div class="post-tag">Weekly</div>
+                            <div class="post-tag">Video Call</div>
+                        </div>
+                        
+                        <div class="post-actions">
+                            <button class="action-button">
+                                <i class="far fa-comment"></i>
+                                <span>12 Comments</span>
+                            </button>
+                            <button class="help-button" onclick="showConnectionModal('user1')">Offer Help</button>
+                        </div>
+                        
+                        <div class="post-edit-actions">
+                            <button class="post-button edit-post-btn" onclick="editPost('post1')"><i class="fas fa-edit"></i> Edit</button>
+                            <button class="post-button delete-post-btn" onclick="deletePost('post1')"><i class="fas fa-trash"></i> Delete</button>
+                        </div>
+                    </article>
+                    
+                    <!-- Post Card 2 -->
+                    <article class="post-card" data-user-id="user2" data-location="37.7812,-122.4317" id="post2">
+                        <div class="post-header">
+                            <div class="post-avatar">
+                                <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="User avatar">
+                            </div>
+                            <div class="post-user">
+                                <h4>Priya Patel</h4>
+                                <p>Seeking Help • 45 min ago</p>
+                            </div>
+                            <div class="post-distance">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>3.7 miles away</span>
+                            </div>
+                        </div>
+                        
+                        <div class="post-content">
+                            <p>Need help setting up my new laptop and transferring files from my old one. Not very tech-savvy and would appreciate patient guidance.</p>
+                        </div>
+                        
+                        <div class="post-tags">
+                            <div class="post-tag">Technical Help</div>
+                            <div class="post-tag">One-time</div>
+                            <div class="post-tag">In-person</div>
+                        </div>
+                        
+                        <div class="post-actions">
+                            <button class="action-button">
+                                <i class="far fa-comment"></i>
+                                <span>5 Comments</span>
+                            </button>
+                            <button class="help-button" onclick="showConnectionModal('user2')">Offer Help</button>
+                        </div>
+                        
+                        <div class="post-edit-actions">
+                            <button class="post-button edit-post-btn" onclick="editPost('post2')"><i class="fas fa-edit"></i> Edit</button>
+                            <button class="post-button delete-post-btn" onclick="deletePost('post2')"><i class="fas fa-trash"></i> Delete</button>
+                        </div>
+                    </article>
+                    
+                    <!-- Post Card 3 -->
+                    <article class="post-card" data-user-id="user3" data-location="37.7689,-122.4194" id="post3">
+                        <div class="post-header">
+                            <div class="post-avatar">
+                                <img src="https://randomuser.me/api/portraits/men/75.jpg" alt="User avatar">
+                            </div>
+                            <div class="post-user">
+                                <h4>David Wilson</h4>
+                                <p>Seeking Help • 2 hours ago</p>
+                            </div>
+                            <div class="post-distance">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>0.8 miles away</span>
+                            </div>
+                        </div>
+                        
+                        <div class="post-content">
+                            <p>Recovering from knee surgery and need help with grocery shopping for the next 2 weeks. Can provide list and payment in advance.</p>
+                        </div>
+                        
+                        <div class="post-tags">
+                            <div class="post-tag">Physical Aid</div>
+                            <div class="post-tag">Short-term</div>
+                            <div class="post-tag">Errands</div>
+                        </div>
+                        
+                        <div class="post-actions">
+                            <button class="action-button">
+                                <i class="far fa-comment"></i>
+                                <span>8 Comments</span>
+                            </button>
+                            <button class="help-button" onclick="showConnectionModal('user3')">Offer Help</button>
+                        </div>
+                        
+                        <div class="post-edit-actions">
+                            <button class="post-button edit-post-btn" onclick="editPost('post3')"><i class="fas fa-edit"></i> Edit</button>
+                            <button class="post-button delete-post-btn" onclick="deletePost('post3')"><i class="fas fa-trash"></i> Delete</button>
+                        </div>
+                    </article>
+                </section>
+            </main>
+        </div>
+        
+        <!-- Chat Button -->
+        <div class="chat-button" aria-label="Open chat">
+            <i class="fas fa-comment-dots"></i>
+            <div class="chat-badge">3</div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <nav class="mobile-menu">
+            <div class="mobile-menu-items">
+                <a href="#" class="mobile-menu-item active">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                <a href="#" class="mobile-menu-item">
+                    <i class="fas fa-search"></i>
+                    <span>Search</span>
+                </a>
+                <a href="#" class="mobile-menu-item">
+                    <i class="fas fa-comments"></i>
+                    <span>Messages <span class="mobile-badge">5</span></span>
+                </a>
+                <a href="#" class="mobile-menu-item">
+                    <i class="fas fa-bell"></i>
+                    <span>Notifications <span class="mobile-badge">3</span></span>
+                </a>
+                <a href="#" class="mobile-menu-item" id="mobileProfileBtn">
+                    <i class="fas fa-user"></i>
+                    <span>Profile</span>
+                </a>
+            </div>
+        </nav>
+        
+        <!-- Connection Modal -->
+        <div class="modal" id="connectionModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-handshake"></i> Connection Made!</h3>
+                    <button class="close-btn" onclick="closeModal()">&times;</button>
+                </div>
+                
+                <div class="connection-info">
+                    <div class="connection-card">
+                        <div class="connection-avatar">
+                            <img src="https://randomuser.me/api/portraits/women/45.jpg" alt="Your profile">
+                        </div>
+                        <div class="connection-details">
+                            <h4>Sarah Johnson (You)</h4>
+                            <p>Offering: Counseling, Emotional Support</p>
+                            <div class="connection-stats">
+                                <div class="stat-item">
+                                    <i class="fas fa-star"></i>
+                                    <span>4.8 (24 reviews)</span>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>Online Now</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="connection-card">
+                        <div class="connection-avatar">
+                            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Michael Chen">
+                        </div>
+                        <div class="connection-details">
+                            <h4>Michael Chen</h4>
+                            <p>Seeking: Emotional Support, Conversation</p>
+                            <div class="connection-stats">
+                                <div class="stat-item">
+                                    <i class="fas fa-star"></i>
+                                    <span>4.5 (18 reviews)</span>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>1.2 miles away</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="location-map">
+                        <i class="fas fa-map-marked-alt fa-2x"></i>
+                        <span>Interactive Map Showing Both Locations</span>
+                    </div>
+                    
+                    <div class="distance-indicator">
+                        <div class="distance-marker" style="left: 20%;"></div>
+                    </div>
+                    <div class="distance-labels">
+                        <span>You</span>
+                        <span>1.2 miles</span>
+                        <span>Michael</span>
+                    </div>
+                    
+                    <div class="ai-suggestion">
+                        <h4><i class="fas fa-robot"></i> AI Suggestion</h4>
+                        <p>Based on both your profiles and proximity, we suggest meeting at Central Cafe for coffee. 
+                           This neutral location is halfway between you both and known for its quiet atmosphere, 
+                           perfect for conversation. Available times: Tomorrow 2-4 PM or Friday 10 AM-12 PM.</p>
+                    </div>
+                    
+                    <div class="connection-actions">
+                        <button class="action-btn message-btn">
+                            <i class="fas fa-comment"></i>
+                            <span>Send Message</span>
+                        </button>
+                        <button class="action-btn call-btn">
+                            <i class="fas fa-phone-alt"></i>
+                            <span>Voice Call</span>
+                        </button>
                     </div>
                 </div>
-                
-                <div class="location-map">
-                    <i class="fas fa-map-marked-alt fa-2x"></i>
-                    <span>Interactive Map Showing Both Locations</span>
+            </div>
+        </div>
+
+        <!-- Profile Management Modal -->
+        <div class="profile-modal" id="profileModal">
+            <div class="profile-modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-user-edit"></i> Edit Your Profile</h3>
+                    <button class="close-btn" onclick="closeProfileModal()">&times;</button>
                 </div>
                 
-                <div class="distance-indicator">
-                    <div class="distance-marker" style="left: 20%;"></div>
-                </div>
-                <div class="distance-labels">
-                    <span>You</span>
-                    <span>1.2 miles</span>
-                    <span>Michael</span>
+                <form class="profile-form" id="profileForm">
+                    <div class="form-group">
+                        <label for="profileName">Full Name</label>
+                        <input type="text" id="profileName" value="Sarah Johnson">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="profileBio">Bio</label>
+                        <textarea id="profileBio">Experienced counselor offering emotional support and mental wellness coaching. Passionate about community building and helping others.</textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="profileLocation">Location</label>
+                        <input type="text" id="profileLocation" value="San Francisco, CA">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="profileStatus">Current Status</label>
+                        <select id="profileStatus">
+                            <option value="offering" selected>Offering Help</option>
+                            <option value="seeking">Seeking Help</option>
+                            <option value="both">Both Offering and Seeking</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="post-button cancel-btn" onclick="closeProfileModal()">Cancel</button>
+                        <button type="submit" class="post-button save-btn">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Add Skill Modal -->
+        <div class="modal" id="addSkillModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-plus-circle"></i> Add New Skill</h3>
+                    <button class="close-btn" onclick="closeSkillModal()">&times;</button>
                 </div>
                 
-                <div class="ai-suggestion">
-                    <h4><i class="fas fa-robot"></i> AI Suggestion</h4>
-                    <p>Based on both your profiles and proximity, we suggest meeting at Central Cafe for coffee. 
-                       This neutral location is halfway between you both and known for its quiet atmosphere, 
-                       perfect for conversation. Available times: Tomorrow 2-4 PM or Friday 10 AM-12 PM.</p>
+                <form id="skillForm">
+                    <div class="form-group">
+                        <label for="skillName">Skill Name</label>
+                        <input type="text" id="skillName" placeholder="Enter skill (e.g. Cooking, Tutoring)">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="skillLevel">Proficiency Level</label>
+                        <select id="skillLevel">
+                            <option>Beginner</option>
+                            <option>Intermediate</option>
+                            <option>Advanced</option>
+                            <option>Expert</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="skillDesc">Description (Optional)</label>
+                        <textarea id="skillDesc" placeholder="Describe your experience with this skill"></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="post-button cancel-btn" onclick="closeSkillModal()">Cancel</button>
+                        <button type="submit" class="post-button save-btn">Add Skill</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Add Need Modal -->
+        <div class="modal" id="addNeedModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-plus-circle"></i> Add New Need</h3>
+                    <button class="close-btn" onclick="closeNeedModal()">&times;</button>
                 </div>
                 
-                <div class="connection-actions">
-                    <button class="action-btn message-btn">
-                        <i class="fas fa-comment"></i>
-                        <span>Send Message</span>
-                    </button>
-                    <button class="action-btn call-btn">
-                        <i class="fas fa-phone-alt"></i>
-                        <span>Voice Call</span>
-                    </button>
-                </div>
+                <form id="needForm">
+                    <div class="form-group">
+                        <label for="needName">Need Name</label>
+                        <input type="text" id="needName" placeholder="Enter need (e.g. Home Repair, Childcare)">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="needFrequency">Frequency</label>
+                        <select id="needFrequency">
+                            <option>One-time</option>
+                            <option>Weekly</option>
+                            <option>Bi-weekly</option>
+                            <option>Monthly</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="needDesc">Description</label>
+                        <textarea id="needDesc" placeholder="Describe what you need help with"></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="post-button cancel-btn" onclick="closeNeedModal()">Cancel</button>
+                        <button type="submit" class="post-button save-btn">Add Need</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 
     <script>
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyAAxl0xBc_nLkTRO3XwiedbBD7Vj417i5M",
-            authDomain: "smart-personal-helper.firebaseapp.com",
-            projectId: "smart-personal-helper",
-            storageBucket: "smart-personal-helper.appspot.com",
-            messagingSenderId: "63071338320",
-            appId: "1:63071338320:web:87851a90236a7df7ff3655",
-            measurementId: "G-MP9GQJYTQC"
-        };
-        
-        // Initialize Firebase
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        
-        // Get Firebase services
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        
         // DOM Elements
-        const modeToggle = document.querySelector('.mode-toggle input');
-        const postForm = document.querySelector('.post-form');
-        const helpButtons = document.querySelectorAll('.help-button');
+        const modeToggle = document.getElementById('modeToggle');
+        const postForm = document.getElementById('postForm');
+        const postTitle = document.getElementById('postTitle');
+        const postContent = document.getElementById('postContent');
         const modal = document.getElementById('connectionModal');
-        
-        // Event Listeners
-        modeToggle.addEventListener('change', toggleHelpMode);
-        postForm.addEventListener('submit', handlePostSubmit);
-        
-        // Functions
+        const profileModal = document.getElementById('profileModal');
+        const profileBtn = document.getElementById('profileBtn');
+        const profileDropdown = document.getElementById('profileDropdown');
+        const mobileProfileBtn = document.getElementById('mobileProfileBtn');
+        const profileForm = document.getElementById('profileForm');
+        const addSkillBtn = document.getElementById('addSkillBtn');
+        const addSkillModal = document.getElementById('addSkillModal');
+        const skillForm = document.getElementById('skillForm');
+        const skillsList = document.getElementById('skillsList');
+        const addNeedBtn = document.getElementById('addNeedBtn');
+        const addNeedModal = document.getElementById('addNeedModal');
+        const needForm = document.getElementById('needForm');
+        const needsList = document.getElementById('needsList');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const notificationLink = document.getElementById('notificationsLink');
+        const notificationDropdown = document.getElementById('notificationDropdown');
+        const messagesLink = document.getElementById('messagesLink');
+        const requestsLink = document.getElementById('requestsLink');
+        const offersLink = document.getElementById('offersLink');
+        const mainApp = document.getElementById('mainApp');
+        const loginPage = document.getElementById('loginPage');
+        const loginForm = document.getElementById('loginForm');
+        const signupLink = document.getElementById('signupLink');
+
+        // Current user data
+        let currentUser = {
+            name: "Sarah Johnson",
+            status: "offering",
+            skills: ["Counseling", "Tech Support", "Tutoring"],
+            needs: ["Home Repair", "Childcare", "Transportation"],
+            loggedIn: true
+        };
+
+        // Initialize application
+        function initApp() {
+            // Set up event listeners
+            modeToggle.addEventListener('change', toggleHelpMode);
+            postForm.addEventListener('submit', handlePostSubmit);
+            profileBtn.addEventListener('click', toggleProfileDropdown);
+            mobileProfileBtn.addEventListener('click', openProfileModal);
+            profileForm.addEventListener('submit', saveProfile);
+            addSkillBtn.addEventListener('click', openSkillModal);
+            skillForm.addEventListener('submit', addNewSkill);
+            addNeedBtn.addEventListener('click', openNeedModal);
+            needForm.addEventListener('submit', addNewNeed);
+            logoutBtn.addEventListener('click', logout);
+            notificationLink.addEventListener('click', toggleNotifications);
+            messagesLink.addEventListener('click', showMessages);
+            requestsLink.addEventListener('click', showRequests);
+            offersLink.addEventListener('click', showOffers);
+            loginForm.addEventListener('submit', login);
+            signupLink.addEventListener('click', showSignup);
+            
+            // Set up delete buttons
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const item = this.closest('.skill-item, .need-item');
+                    item.remove();
+                });
+            });
+            
+            // Set up edit buttons
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const item = this.closest('.skill-item, .need-item');
+                    alert('Edit functionality would open a form here');
+                });
+            });
+            
+            // Set up navigation links
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                if(link.id !== 'notificationsLink') {
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        setActiveLink(this);
+                    });
+                }
+            });
+            
+            // Mark all as read
+            document.querySelector('.mark-read').addEventListener('click', function() {
+                document.querySelectorAll('.notification-item').forEach(item => {
+                    item.classList.remove('unread');
+                });
+                document.querySelectorAll('.notification-badge').forEach(badge => {
+                    badge.textContent = '0';
+                });
+                document.querySelectorAll('.mobile-badge').forEach(badge => {
+                    if(badge.parentElement.querySelector('span').textContent === 'Notifications') {
+                        badge.textContent = '0';
+                    }
+                });
+            });
+            
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!profileBtn.contains(e.target)) {
+                    profileDropdown.classList.remove('active');
+                }
+                if (!notificationLink.contains(e.target)) {
+                    notificationDropdown.classList.remove('active');
+                }
+            });
+        }
+
+        // Toggle between seek help and offer help modes
         function toggleHelpMode(e) {
             const labels = document.querySelectorAll('.toggle-labels span');
             if (e.target.checked) {
                 labels[0].classList.remove('active-label');
                 labels[1].classList.add('active-label');
-                document.querySelector('.create-post h2').textContent = 'Create a Help Offer';
-                document.querySelector('.post-form textarea').placeholder = 'What kind of help can you offer? Be specific about your skills and availability...';
+                postTitle.textContent = 'Create a Help Offer';
+                postContent.placeholder = 'What kind of help can you offer? Be specific about your skills and availability...';
             } else {
                 labels[0].classList.add('active-label');
                 labels[1].classList.remove('active-label');
-                document.querySelector('.create-post h2').textContent = 'Create a Help Request';
-                document.querySelector('.post-form textarea').placeholder = 'What kind of help do you need? Be specific about your needs and timeframe...';
+                postTitle.textContent = 'Create a Help Request';
+                postContent.placeholder = 'What kind of help do you need? Be specific about your needs and timeframe...';
             }
         }
-        
-        async function handlePostSubmit(e) {
+
+        // Handle post submission
+        function handlePostSubmit(e) {
             e.preventDefault();
-            const content = e.target.querySelector('textarea').value.trim();
-            const category = e.target.querySelector('select').value;
+            const content = postContent.value.trim();
+            const category = document.getElementById('postCategory').value;
             
             if (!content || category === 'Select a category') {
                 alert('Please fill all fields');
                 return;
             }
             
-            try {
-                const user = auth.currentUser;
-                if (!user) {
-                    alert('Please sign in to post');
-                    return;
-                }
-                
-                const isOfferingHelp = modeToggle.checked;
-                const postData = {
-                    userId: user.uid,
-                    userName: user.displayName,
-                    userPhotoURL: user.photoURL || 'https://randomuser.me/api/portraits/lego/1.jpg',
-                    content,
-                    category,
-                    isHelpRequest: !isOfferingHelp,
-                    isHelpOffer: isOfferingHelp,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    location: null, // Would be populated with actual location data
-                    status: 'active',
-                    comments: [],
-                    helpers: []
-                };
-                
-                await db.collection('posts').add(postData);
-                e.target.reset();
-                alert('Post created successfully!');
-            } catch (error) {
-                console.error('Error creating post:', error);
-                alert('Failed to create post. Please try again.');
-            }
+            // In a real app, this would save to a database
+            alert('Post created successfully!');
+            postForm.reset();
         }
-        
+
+        // Show connection modal
         function showConnectionModal(userId) {
             modal.style.display = 'flex';
-            // In a real app, we would fetch user data from Firestore
-            // and update the modal with actual user information
         }
-        
+
+        // Close modal
         function closeModal() {
             modal.style.display = 'none';
         }
-        
-        // Initialize auth state listener
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                // User is signed in
-                console.log('User signed in:', user.displayName);
-                // Update UI with user data
-                document.querySelectorAll('.user-avatar img, .user-profile img').forEach(img => {
-                    img.src = user.photoURL || 'https://randomuser.me/api/portraits/lego/1.jpg';
-                });
-                document.querySelector('.user-info h3').textContent = user.displayName;
-            } else {
-                // User is signed out
-                console.log('User signed out');
-                // Redirect to login or show guest UI
-            }
-        });
-        
-        // Close modal when clicking outside
-        window.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                closeModal();
-            }
-        });
-        
-        // Simulate location-based matching
-        function updateDistances() {
-            document.querySelectorAll('.post-card').forEach(card => {
-                const distance = (Math.random() * 5).toFixed(1);
-                card.querySelector('.post-distance span').textContent = `${distance} miles away`;
-            });
+
+        // Toggle profile dropdown
+        function toggleProfileDropdown(e) {
+            e.stopPropagation();
+            notificationDropdown.classList.remove('active');
+            profileDropdown.classList.toggle('active');
         }
+
+        // Open profile modal
+        function openProfileModal() {
+            profileModal.style.display = 'flex';
+        }
+
+        // Close profile modal
+        function closeProfileModal() {
+            profileModal.style.display = 'none';
+        }
+
+        // Save profile
+        function saveProfile(e) {
+            e.preventDefault();
+            const newName = document.getElementById('profileName').value;
+            const newStatus = document.getElementById('profileStatus').value;
+            
+            // Update profile data
+            currentUser.name = newName;
+            currentUser.status = newStatus;
+            
+            // Update UI
+            document.querySelectorAll('.user-info h3').forEach(el => {
+                el.textContent = newName;
+            });
+            
+            document.querySelector('.user-info p').textContent = 
+                newStatus === 'offering' ? 'Offering Help' : 
+                newStatus === 'seeking' ? 'Seeking Help' : 'Both Offering and Seeking';
+            
+            alert('Profile updated successfully!');
+            closeProfileModal();
+        }
+
+        // Open skill modal
+        function openSkillModal() {
+            addSkillModal.style.display = 'flex';
+        }
+
+        // Close skill modal
+        function closeSkillModal() {
+            addSkillModal.style.display = 'none';
+            skillForm.reset();
+        }
+
+        // Add new skill
+        function addNewSkill(e) {
+            e.preventDefault();
+            const skillName = document.getElementById('skillName').value;
+            
+            if (!skillName) {
+                alert('Please enter a skill name');
+                return;
+            }
+            
+            // Create new skill element
+            const skillItem = document.createElement('div');
+            skillItem.className = 'skill-item';
+            skillItem.innerHTML = `
+                <span>${skillName}</span>
+                <div class="skill-actions">
+                    <button class="edit-btn"><i class="fas fa-edit"></i></button>
+                    <button class="delete-btn"><i class="fas fa-trash"></i></button>
+                </div>
+            `;
+            
+            // Add event listeners
+            skillItem.querySelector('.delete-btn').addEventListener('click', function() {
+                skillItem.remove();
+            });
+            
+            skillItem.querySelector('.edit-btn').addEventListener('click', function() {
+                alert('Edit functionality would open a form here');
+            });
+            
+            // Add to list
+            skillsList.appendChild(skillItem);
+            closeSkillModal();
+        }
+
+        // Open need modal
+        function openNeedModal() {
+            addNeedModal.style.display = 'flex';
+        }
+
+        // Close need modal
+        function closeNeedModal() {
+            addNeedModal.style.display = 'none';
+            needForm.reset();
+        }
+
+        // Add new need
+        function addNewNeed(e) {
+            e.preventDefault();
+            const needName = document.getElementById('needName').value;
+            
+            if (!needName) {
+                alert('Please enter a need');
+                return;
+            }
+            
+            // Create new need element
+            const needItem = document.createElement('div');
+            needItem.className = 'need-item';
+            needItem.innerHTML = `
+                <span>${needName}</span>
+                <div class="need-actions">
+                    <button class="edit-btn"><i class="fas fa-edit"></i></button>
+                    <button class="delete-btn"><i class="fas fa-trash"></i></button>
+                </div>
+            `;
+            
+            // Add event listeners
+            needItem.querySelector('.delete-btn').addEventListener('click', function() {
+                needItem.remove();
+            });
+            
+            needItem.querySelector('.edit-btn').addEventListener('click', function() {
+                alert('Edit functionality would open a form here');
+            });
+            
+            // Add to list
+            needsList.appendChild(needItem);
+            closeNeedModal();
+        }
+
+        // Edit post
+        function editPost(postId) {
+            const post = document.getElementById(postId);
+            const content = post.querySelector('.post-content p').textContent;
+            
+            // Set values in form
+            postContent.value = content;
+            document.getElementById('postCategory').value = 'Emotional Support'; // Would be dynamic
+            
+            // Scroll to form
+            document.querySelector('.create-post').scrollIntoView({ behavior: 'smooth' });
+            
+            alert('Post loaded for editing. Make your changes and click "Update Post"');
+        }
+
+        // Delete post
+        function deletePost(postId) {
+            if (confirm('Are you sure you want to delete this post?')) {
+                document.getElementById(postId).remove();
+                alert('Post deleted successfully');
+            }
+        }
+
+        // Set active link
+        function setActiveLink(link) {
+            document.querySelectorAll('.nav-links a').forEach(a => {
+                a.classList.remove('active');
+            });
+            link.classList.add('active');
+        }
+
+        // Toggle notifications dropdown
+        function toggleNotifications(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            profileDropdown.classList.remove('active');
+            notificationDropdown.classList.toggle('active');
+        }
+
+        // Show messages
+        function showMessages(e) {
+            e.preventDefault();
+            setActiveLink(this);
+            alert('Messages page would load here');
+        }
+
+        // Show requests
+        function showRequests(e) {
+            e.preventDefault();
+            setActiveLink(this);
+            alert('My Requests page would load here');
+        }
+
+        // Show offers
+        function showOffers(e) {
+            e.preventDefault();
+            setActiveLink(this);
+            alert('My Offers page would load here');
+        }
+
+        // Logout
+        function logout(e) {
+            e.preventDefault();
+            currentUser.loggedIn = false;
+            mainApp.style.display = 'none';
+            loginPage.style.display = 'flex';
+        }
+
+        // Login
+        function login(e) {
+            e.preventDefault();
+            currentUser.loggedIn = true;
+            loginPage.style.display = 'none';
+            mainApp.style.display = 'block';
+        }
+
+        // Show signup
+        function showSignup(e) {
+            e.preventDefault();
+            alert('Sign up form would appear here');
+        }
+
+        // Initialize the application when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initApp);
         
-        // Initial update
-        updateDistances();
-        // Update distances periodically to simulate movement
-        setInterval(updateDistances, 30000);
+        // Close modals when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+            if (e.target === profileModal) closeProfileModal();
+            if (e.target === addSkillModal) closeSkillModal();
+            if (e.target === addNeedModal) closeNeedModal();
+        });
     </script>
 </body>
 </html>
